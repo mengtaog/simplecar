@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{d6b7586a-bc0b-466c-8cda-4a61ae2841e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\model">
+      <UniqueIdentifier>{201d2f28-66d1-4b58-98ba-21230c904430}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\checker">
+      <UniqueIdentifier>{2a3d8dde-af33-4577-a35b-967c77de1f88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\sat">
+      <UniqueIdentifier>{fa2e4e30-bc84-4f9c-bdcd-d16969245958}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\main.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\model\aiger.c">
+      <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="src\model\AigerModel.cc">
+      <Filter>src\model</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\model\aiger.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="src\model\AigerModel.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="src\model\Settings.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="src\check\BaseChecker.h" />
+    <ClInclude Include="src\model\Header.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".gitignore" />
+  </ItemGroup>
+</Project>
