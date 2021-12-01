@@ -79,16 +79,25 @@
     <None Include=".gitignore" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\check\BackwardChecker.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\model\aiger.c" />
     <ClCompile Include="src\model\AigerModel.cc" />
+    <ClCompile Include="src\model\MainSolver.cpp" />
+    <ClCompile Include="src\model\State.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\check\BackwardChecker.h" />
     <ClInclude Include="src\check\BaseChecker.h" />
     <ClInclude Include="src\model\aiger.h" />
     <ClInclude Include="src\model\AigerModel.h" />
-    <ClInclude Include="src\model\Header.h" />
+    <ClInclude Include="src\model\IMainSolver.h" />
+    <ClInclude Include="src\model\ISolver.h" />
+    <ClInclude Include="src\model\MainSolver.h" />
+    <ClInclude Include="src\model\OverSequence.h" />
     <ClInclude Include="src\model\Settings.h" />
+    <ClInclude Include="src\model\StartSolver.h" />
+    <ClInclude Include="src\model\State.h" />
   </ItemGroup>
   <ItemDefinitionGroup />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

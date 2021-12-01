@@ -21,28 +21,33 @@ class AigerModel
 {
 public:
     AigerModel (string aigFilePath);
-private:
-#pragma region private methods
-    void Init (aiger* aig);
 
-    bool IsTrue (const unsigned id)
-	{
-		return (id == 1) || (m_trues.find (id) != m_trues.end ());
-	}
-	
-	bool IsFalse (const unsigned id)
-	{
-		return (id == 0) || (m_trues.find ((id % 2 == 0) ? (id+1) : (id-1)) != m_trues.end ());
-	}
-	
-	int GetCarId (const unsigned id)
-	{
-		if (id == 0)
+    bool IsTrue(const unsigned id)
+    {
+        return (id == 1) || (m_trues.find(id) != m_trues.end());
+    }
+
+    bool IsFalse(const unsigned id)
+    {
+        return (id == 0) || (m_trues.find((id % 2 == 0) ? (id + 1) : (id - 1)) != m_trues.end());
+    }
+
+    int GetCarId(const unsigned id)
+    {
+        if (id == 0)
         {
             //placeholder
         }
-		return ((id % 2 == 0) ? (id/2) : -(id/2));
-	}
+        return ((id % 2 == 0) ? (id / 2) : -(id / 2));
+    }
+
+#pragma region get & set
+    std::vector<int>& GetInitialState() { return m_initialState; }
+    std::vector<int>& GetOutputs() { return m_outputs; }
+#pragma endregion
+private:
+#pragma region private methods
+    void Init (aiger* aig);
     
     void CollectTrues (const aiger* aig);
 

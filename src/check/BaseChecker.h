@@ -2,6 +2,7 @@
 #define BASECHECKER_H
 
 #include "../model/AigerModel.h"
+#include "../model/Settings.h"
 
 namespace car
 {
@@ -10,8 +11,6 @@ namespace car
     {
     public:
         virtual bool Check() = 0;
-    private:
-        AigerModel* m_model;
     };
 
 } //namespace car
