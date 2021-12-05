@@ -4,7 +4,9 @@
 #include "BaseChecker.h"
 #include "../model/State.h"
 #include "../model/OverSequence.h"
+#include "UnderSequence.h"
 #include "../model/ISolver.h"
+#include "Task.h"
 
 namespace car
 {
@@ -20,7 +22,16 @@ private:
 
 	bool ImmediateSatisfiable(int badId);
 
+	bool isInvExisted();
+
+	int GetNewLevel(State* state, int start = 0);
+
+	State* GetnewState(const State* state); 
+
+
+
 	OverSequence m_overSequence;
+	UnderSequence m_underSequence;
 	Settings m_settings;
 	AigerModel* m_model;
 	State* m_initialState;

@@ -7,7 +7,11 @@ namespace car
 class IMainSolver : public ISolver
 {
 public:
-	virtual bool SolveWithAssumptionAndBad(std::vector<int>& assumption, int bad) = 0;
+	virtual bool SolveWithAssumptionAndBad(std::vector<int>& assumption, int badId) = 0;
+
+	virtual bool SolveWithAssumption(std::vector<int>& assignment, int frameLevel) = 0;
+
+	virtual void GetUnsatisfiableCoreFromBad(std::vector<int>& out) = 0;
 };
 
 

@@ -1,0 +1,7 @@
+1. 調用minisat的solveLimited方法，
+inline lbool    Solver::solveLimited  (const vec<Lit>& assumps){ assumps.copyTo(assumptions); return solve_(); }
+
+观察到方法将传入的assumps数组拷贝到assumptions数组再执行了solve_(),
+如果直接在assumptions数组内构造，省去一次数组拷贝可以更快。
+
+2. inputNums是否有可能比minisat中model的size更大？

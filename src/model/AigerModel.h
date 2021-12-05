@@ -42,11 +42,23 @@ public:
     }
 
 #pragma region get & set
+    int GetNumInputs() {return m_numInputs;}
+    int GetNumLatches() {return m_numLatches;}
     std::vector<int>& GetInitialState() { return m_initialState; }
-    std::vector<int>& GetOutputs() { return m_outputs; }
+    std::vector<int>& GetOutputs() { return m_outputs;} 
+    int GetPrime(const int id) 
+    {
+        std::unordered_map<int,int>::iterator it = m_nextValueOfLatch.find(abs(id));
+        if (it == m_nextValueOfLatch.end())
+        {
+            return 0;
+        }
+        return id > 0 ? it->second : -it->second;
+    }
 #pragma endregion
-private:
+
 #pragma region private methods
+private:
     void Init (aiger* aig);
     
     void CollectTrues (const aiger* aig);
@@ -74,6 +86,8 @@ private:
 	inline void InsertIntoPreValueMapping (const int key, const int value);
 
 	inline aiger_and* IsAndGate (const unsigned id, const aiger* aig);
+
+    
 
 #pragma endregion
 

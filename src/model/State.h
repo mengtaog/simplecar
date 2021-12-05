@@ -9,11 +9,13 @@ namespace car
 class State
 {
 public:
-	State(const std::vector<int>& assignment);
+	State(State* inPreState, std::vector<int>* inAssignment, int inDepth);
+	~State() {delete assignment;}
 
-	std::vector<int>& GetAssignment() { return m_assignment; }
-private:
-	std::vector<int> m_assignment;
+	int depth;
+	State* preState;
+	std::vector<int>* assignment;
+	
 };
 
 }//namespace car
