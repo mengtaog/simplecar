@@ -1,6 +1,5 @@
 #include "BackwardChecker.h"
-#include "../model/MainSolver.h"
-#include "../model/StartSolver.h"
+#include "CarSolver.h"
 #include <stack>
 namespace car
 {
@@ -17,15 +16,13 @@ namespace car
 		{
 			int badId = m_model->GetOutputs().at(i);
 			bool result = Check(badId);
-
-
 		}
 		return true;
 	}
 
 	bool BackwardChecker::Check(int badId)
 	{
-		#pragma region early stage
+#pragma region early stage
 		if (m_model->IsTrue(badId))
 		{
 			//placeholder
@@ -57,13 +54,14 @@ namespace car
 			m_overSequence.GetFrame(0, frame);
 			m_mainSolver->AddNewFrame(frame, 0);
 		}
-		# pragma endregion 
+# pragma endregion 
 
 		//main stage
 		int frameStep = 0;
+		std::stack<Task> workingStack;
 		while (true)
 		{
-			std::stack<Task> workingStack;
+			m_minUpdateLevel = m_overSequence.GetLength();
 			for(int i = m_underSequence.size() - 1; i >= 0; --i)
 			{
 				for (int j = 0; j < m_underSequence[i].size(); ++j)
@@ -101,8 +99,7 @@ namespace car
 						{
 							//placeholder, uc is empty => safe
 						}
-						m_mainSolver->AddClause(uc, task.frameLevel+1);
-						m_overSequence.Insert(uc, task.frameLevel+1);
+						AddUnsatisfiableCore(uc, task.frameLevel+1);
 						task.frameLevel++;
 						continue;
 					}
@@ -127,8 +124,7 @@ namespace car
 					{
 						//placeholder, uc is empty => safe
 					}
-					m_mainSolver->AddClause(uc, task.frameLevel+1);
-					m_overSequence.Insert(uc, task.frameLevel+1);
+					AddUnsatisfiableCore(uc, task.frameLevel+1);
 					task.frameLevel++;
 					continue;
 				}
@@ -149,8 +145,17 @@ namespace car
 	void BackwardChecker::Init()
 	{
 		m_overSequence = OverSequence();
-		m_mainSolver = new MainSolver(m_model);
-		m_startSolver = new StartSolver(m_model);
+		m_mainSolver = new CarSolver(m_model);
+	}
+
+	void BackwardChecker::AddUnsatisfiableCore(std::vector<int>& uc, int frameLevel)
+	{
+		m_mainSolver->AddClause(uc, frameLevel);
+		m_overSequence.Insert(uc, frameLevel);
+		if(frameLevel < m_minUpdateLevel)
+		{
+			m_minUpdateLevel = frameLevel;
+		}
 	}
 
 	bool BackwardChecker::ImmediateSatisfiable(int badId)
@@ -165,7 +170,21 @@ namespace car
 
 	bool BackwardChecker::isInvExisted()
 	{
-		//placeholder
+		if (m_invSolver == nullptr)
+		{
+			m_invSolver = new CarSolver(m_model);
+		}
+		bool result = false;
+		for (int i = 0; i < m_overSequence.GetLength(); ++i)
+		{
+			if (IsInvariant(i))
+			{
+				result = true;
+			}
+		}
+		delete m_invSolver;
+		m_invSolver = nullptr;
+		return result;
 	}
 
 	int BackwardChecker::GetNewLevel(State* state, int start = 0)
@@ -180,7 +199,23 @@ namespace car
 		return m_overSequence.GetLength(); //placeholder
 	}
 
+	bool BackwardChecker::IsInvariant(int frameLevel)
+	{
+		std::vector<std::vector<int> > frame;
+		m_overSequence.GetFrame(frameLevel, frame);
 
+		if (frameLevel < m_minUpdateLevel)
+		{
+			m_invSolver->AddConstraintOr(frame);
+			return false;
+		}
+
+		m_invSolver->AddConstraintAnd(frame);
+		bool result = m_invSolver->SolveWithAssumption();
+		m_invSolver->FlipLastConstrain();
+		m_invSolver->AddConstraintOr(frame);
+		return result;
+	}
 
 
 }//namespace car

@@ -16,7 +16,6 @@ public:
     std::vector<State*>& operator[] (int i) {return m_sequence[i];}
 private:
     std::vector<std::vector<State*> > m_sequence;
-
 };
 
 }//namespace car

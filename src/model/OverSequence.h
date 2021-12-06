@@ -2,6 +2,7 @@
 #define OVERSEQUENCE_h
 
 #include <vector>
+#include "cudd.h"
 
 namespace car
 {

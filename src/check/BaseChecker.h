@@ -1,8 +1,8 @@
 #ifndef BASECHECKER_H
 #define BASECHECKER_H
 
-#include "../model/AigerModel.h"
-#include "../model/Settings.h"
+#include "AigerModel.h"
+#include "Settings.h"
 
 namespace car
 {
@@ -10,7 +10,7 @@ namespace car
     class BaseChecker
     {
     public:
-        virtual bool Check() = 0;
+        virtual bool Run() = 0;
     };
 
 } //namespace car

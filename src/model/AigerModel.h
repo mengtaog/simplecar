@@ -44,6 +44,7 @@ public:
 #pragma region get & set
     int GetNumInputs() {return m_numInputs;}
     int GetNumLatches() {return m_numLatches;}
+    int GetMaxId() {return m_maxId;}
     std::vector<int>& GetInitialState() { return m_initialState; }
     std::vector<int>& GetOutputs() { return m_outputs;} 
     int GetPrime(const int id) 
@@ -92,7 +93,7 @@ private:
 #pragma endregion
 
 #pragma region private member variables
-
+    int m_maxId;
     int m_numInputs;
     int m_numLatches;
     int m_numAnds;

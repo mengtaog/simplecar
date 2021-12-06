@@ -20,23 +20,25 @@ public:
 private:
 	void Init();
 
+	void AddUnsatisfiableCore(std::vector<int>& uc, int frameLevel);
+
 	bool ImmediateSatisfiable(int badId);
 
 	bool isInvExisted();
 
+	bool IsInvariant(int frameLevel);
+
 	int GetNewLevel(State* state, int start = 0);
 
-	State* GetnewState(const State* state); 
 
 
-
+	int m_minUpdateLevel;
 	OverSequence m_overSequence;
 	UnderSequence m_underSequence;
 	Settings m_settings;
 	AigerModel* m_model;
 	State* m_initialState;
-	IMainSolver* m_mainSolver;
-	ISolver* m_startSolver;
+	ISolver* m_mainSolver;
 	ISolver* m_invSolver;
 };
 
