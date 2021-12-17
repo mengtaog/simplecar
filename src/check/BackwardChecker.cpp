@@ -1,6 +1,7 @@
 #include "BackwardChecker.h"
 #include "CarSolver.h"
 #include <stack>
+#include <string>
 namespace car
 {
 	BackwardChecker::BackwardChecker(Settings settings, AigerModel* model) : m_settings(settings), m_model(model)
@@ -35,6 +36,7 @@ namespace car
 		{
 			int badId = m_model->GetOutputs().at(i);
 			bool result = Check(badId);
+			PrintUC();
 			if (result)
 			{
 				m_log->PrintSafe(i);
@@ -89,9 +91,9 @@ namespace car
 		while (true)
 		{
 			m_minUpdateLevel = m_overSequence.GetLength();
-			for(int i = m_underSequence.size() - 1; i >= 0; --i)
+			for (int i = 0; i < m_underSequence.size(); ++i)
 			{
-				for (int j = 0; j < m_underSequence[i].size(); ++j)
+				for (int j = m_underSequence[i].size()-1; j>=0; --j)
 				{
 					workingStack.emplace(m_underSequence[i][j], frameStep, false);
 				}
@@ -131,6 +133,7 @@ namespace car
 							//placeholder, uc is empty => safe
 						}
 						AddUnsatisfiableCore(uc, task.frameLevel+1);
+
 						task.frameLevel++;
 						continue;
 					}
@@ -157,6 +160,7 @@ namespace car
 						//placeholder, uc is empty => safe
 					}
 					AddUnsatisfiableCore(uc, task.frameLevel+1);
+
 					task.frameLevel++;
 					continue;
 				}
@@ -232,7 +236,7 @@ namespace car
 	{
 		for (int i = start; i < m_overSequence.GetLength(); ++i)
 		{
-			if (!m_overSequence.IsImplyFrame(*(state->latches), i))
+			if (!m_overSequence.IsBlockedByFrame(*(state->latches), i))
 			{
 				return i-1;
 			}
@@ -256,6 +260,16 @@ namespace car
 		m_invSolver->FlipLastConstrain();
 		m_invSolver->AddConstraintOr(frame);
 		return result;
+	}
+
+	std::string PrintState(std::vector<int>& vec)
+	{
+		string res = "";
+		for (int i = 0; i < vec.size(); ++i)
+		{
+			res += std::to_string(vec[i]);
+		}
+		return res;
 	}
 
 

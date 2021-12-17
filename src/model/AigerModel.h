@@ -34,7 +34,7 @@ public:
 
     bool IsLatch(int id)
     {
-        if (abs(id) > m_numInputs && abs(id) < m_numInputs + m_numLatches) 
+        if (abs(id) > m_numInputs && abs(id) <= m_numInputs + m_numLatches) 
         {
             return true;
         }

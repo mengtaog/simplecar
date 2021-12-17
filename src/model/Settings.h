@@ -16,7 +16,7 @@ struct Settings
     bool gv = false;
     bool begin = false;
     bool end = true;
-    bool inter = true;
+    bool inter = false;
     bool rotate = false;
     bool inputS = false;
     int timelimit = 0; 

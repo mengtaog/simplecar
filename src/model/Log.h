@@ -5,6 +5,7 @@
 #include <fstream>
 #include "State.h"
 #include <stack>
+#include "OverSequence.h"
 namespace car
 {
 
@@ -34,7 +35,7 @@ public:
             state = state->preState;
         }
         m_log << trace.top()->GetValueOfLatches()<<std::endl;
-        m_log << trace.top()->GetValueOfInputs()<<std::endl;
+        //m_log << trace.top()->GetValueOfInputs()<<std::endl;
         trace.pop();
         while(!trace.empty())
         {
@@ -47,6 +48,19 @@ public:
     void PrintSafe(int badNo)
     {
         m_log <<"0"<<std::endl<<"b"<<badNo<<std::endl<<"."<<std::endl;
+    }
+
+    void PrintUcNums(std::vector<int> &uc, OverSequence& sequence)
+    {
+        for (int i = 0; i < uc.size(); ++i)
+        {
+            m_log<<uc[i]<<" ";
+        }
+        for (int i = 0; i < sequence.GetLength(); ++i)
+        {
+            m_log<<sequence[i].size()<<" ";
+        }
+        m_log<<std::endl;
     }
 
     State* lastState;

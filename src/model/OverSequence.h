@@ -1,5 +1,5 @@
 #ifndef OVERSEQUENCE_H
-#define OVERSEQUENCE_h
+#define OVERSEQUENCE_H
 
 #include <vector>
 #include <cmath>
@@ -29,26 +29,32 @@ public:
 		if (frameLevel >= m_sequence.size()) return;
 		out = m_sequence[frameLevel];
 	}
-	bool IsImplyFrame(std::vector<int>& state, int frameLevel)
+	bool IsBlockedByFrame(std::vector<int>& state, int frameLevel)
 	{
-		for (int i = 0; i < m_sequence[frameLevel].size(); ++i)
+		for (int i = 0; i < m_sequence[frameLevel].size(); ++i)//for each uc
 		{
-			for (int j = 0; j < m_sequence[frameLevel][i].size(); ++j)
+			bool isBlockedByUc = true;
+			for (int j = 0; j < m_sequence[frameLevel][i].size(); ++j)//for each literal in uc
 			{
 				int index = abs(m_sequence[frameLevel][i][j]) - m_numInputs - 1;
 				if (state[index] != m_sequence[frameLevel][i][j])
 				{
-					return false;
+					isBlockedByUc = false;
+					break;
 				}
 			}
+			if (isBlockedByUc)
+			{
+				return true;
+			}
 		}
-		return true;
+		return false;
 	}
 	int GetLength()
 	{
 		return m_sequence.size();
 	}
-
+	std::vector<std::vector<int> >& operator[] (int i) {return m_sequence[i];}
 	int effectiveLevel;
 private:
 	int m_numInputs;
