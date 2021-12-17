@@ -2,7 +2,7 @@
 #define CARSOLVER_H
 
 #include "ISolver.h"
-#include "minisat/core/Solver.h"
+#include "Solver.h"
 #include "AigerModel.h"
 
 using namespace Minisat;
@@ -15,28 +15,30 @@ class CarSolver: public ISolver, public Minisat::Solver
 public:
 	CarSolver(AigerModel* model);
 	~CarSolver();
-    void GetUnsatisfiableCoreFromBad(std::vector<int>& out);
-	void AddClause(const std::vector<int>& clause);
-	void AddClause(const std::vector<int>& clause, int frameLevel);
-	void GetUnsatisfiableCore(std::vector<int>& out);
-	void AddNewFrame(const std::vector<std::vector<int> >& frame, int frameLevel);
-	bool SolveWithAssumptionAndBad(std::vector<int>& assumption, int badId);
-	bool SolveWithAssumption();
-	inline void AddAssumption(int id) {m_assumptions.push(GetLit(id));}
-	bool SolveWithAssumption(std::vector<int>& assumption, int frameLevel);
-	std::vector<int>* GetAssignment();
+    void GetUnsatisfiableCoreFromBad(std::vector<int>& out, int badId) override;
+	void AddClause(const std::vector<int>& clause) override;
+	void AddUnsatisfiableCore(const std::vector<int>& clause, int frameLevel) override;
+	void GetUnsatisfiableCore(std::vector<int>& out) override;
+	void AddNewFrame(const std::vector<std::vector<int> >& frame, int frameLevel) override;
+	bool SolveWithAssumptionAndBad(std::vector<int>& assumption, int badId) override;
+	bool SolveWithAssumption() override;
+	inline void AddAssumption(int id) override {m_assumptions.push(GetLit(id));}
+	bool SolveWithAssumption(std::vector<int>& assumption, int frameLevel) override;
+	std::pair<std::vector<int>*, std::vector<int>* > GetAssignment() override;
 
 	inline void AddConstraintOr(const std::vector<std::vector<int> > frame);
 	inline void AddConstraintAnd(const std::vector<std::vector<int> > frame);
-
-	
 	inline void FlipLastConstrain();
 private:
-
+	static bool cmp(int a, int b)
+	{
+		return abs(a) < abs(b);
+	}
     inline int GetLiteralId(const Lit &l);
 	inline int GetFrameFlag(int frameLevel);
 	inline Lit GetLit(int id);
-	inline int GetNewVar() {return ++m_maxFlag;}
+	inline int GetNewVar() {return m_maxFlag++;}
+
     
     int m_maxFlag;
 	AigerModel* m_model;

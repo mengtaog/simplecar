@@ -2,8 +2,6 @@
 
 namespace car
 {
-	State::State(const std::vector<int> &assignment)
-	{
-		m_assignment = assignment;
-	}
+	int State::numInputs = -1;
+    int State::numLatches = -1;
 }//namespace car

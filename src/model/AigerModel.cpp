@@ -18,8 +18,6 @@ AigerModel::AigerModel(string aigFilePath)
     }
 
     Init(aig);
-    
-
 }
 
 
@@ -30,6 +28,9 @@ void AigerModel::Init(aiger* aig)
     m_numAnds = aig->num_ands;
     m_numConstraints = aig->num_constraints;
     m_numOutputs = aig->num_outputs;
+    m_maxId = aig->maxvar+2;
+    m_trueId = m_maxId - 1;
+	m_falseId = m_maxId;
 
     CollectTrues(aig);
     CollectConstraints(aig);
@@ -154,7 +155,7 @@ void AigerModel::CollectClauses(const aiger* aig)
     m_outputsStart = m_clauses.size();
     //create clauses for outputs
     std::vector<unsigned>().swap(gates);
-    CollectNecessaryAndGatesFromOutput(aig, aig->outputs, aig->num_outputs, exist_gates, gates, false);
+    CollectNecessaryAndGates(aig, aig->outputs, aig->num_outputs, exist_gates, gates, false);
 
     for (std::vector<unsigned>::iterator it = gates.begin(); it != gates.end(); it++)
     {
@@ -170,7 +171,7 @@ void AigerModel::CollectClauses(const aiger* aig)
 
     //create clauses for latches
     std::vector<unsigned>().swap(gates);
-    CollectNecessaryAndGatesFromOutput(aig, aig->latches, aig->num_latches, exist_gates, gates, true);
+    CollectNecessaryAndGates(aig, aig->latches, aig->num_latches, exist_gates, gates, true);
     for (std::vector<unsigned>::iterator it = gates.begin(); it != gates.end(); it++)
     {
         if (*it == 0) continue;
@@ -187,7 +188,7 @@ void AigerModel::CollectClauses(const aiger* aig)
     m_clauses.emplace_back(std::vector<int>{-m_falseId});
 }
 
-void AigerModel::CollectNecessaryAndGatesFromOutput(const aiger* aig, const aiger_symbol* as, const int as_size, 
+void AigerModel::CollectNecessaryAndGates(const aiger* aig, const aiger_symbol* as, const int as_size, 
 	                                        std::unordered_set<unsigned>& exist_gates, std::vector<unsigned>& gates, bool next)
 {
     for (int i = 0; i < as_size; ++i)
@@ -280,15 +281,14 @@ void AigerModel::AddAndGateToClause(const aiger_and* aa)
 
 inline void AigerModel::InsertIntoPreValueMapping(const int key, const int value)
 {
-    std::unordered_map<int, std::vector<int>* >::iterator it = m_preValueOfLatch.find(key);
+    std::unordered_map<int, std::vector<int> >::iterator it = m_preValueOfLatch.find(key);
     if (it == m_preValueOfLatch.end())
     {
-        std::vector<int>* v = new std::vector<int>{value};
-        m_preValueOfLatch.insert(std::pair<int, std::vector<int>* >(key, v));
+        m_preValueOfLatch.insert(std::pair<int, std::vector<int> >(key, std::vector<int>{value}));
     }
     else
     {
-        it->second->emplace_back(value);
+        it->second.emplace_back(value);
     }
 }
 

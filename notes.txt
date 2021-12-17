@@ -7,3 +7,6 @@ inline lbool    Solver::solveLimited  (const vec<Lit>& assumps){ assumps.copyTo(
 2. inputNums是否有可能比minisat中model的size更大？
 
 3. minimal update level 为何不是仅在SAT返回false并添加uc时修改？ 原checker.cpp line 232
+
+
+DdNode *bdd;

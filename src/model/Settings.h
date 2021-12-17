@@ -19,7 +19,6 @@ struct Settings
     bool inter = true;
     bool rotate = false;
     bool inputS = false;
-    bool outputDir = false;
     int timelimit = 0; 
     std::string aigFilePath;
     std::string outputDir;

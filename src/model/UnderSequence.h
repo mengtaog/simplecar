@@ -9,7 +9,14 @@ namespace car
 class UnderSequence
 {
 public:
-    void push(State* state);
+    void push(State* state)
+    {
+        while(m_sequence.size() <= state->depth)
+        {
+            m_sequence.emplace_back(std::vector<State*>());
+        }
+        m_sequence[state->depth].push_back(state);
+    }
 
     int size() {return m_sequence.size();}
 

@@ -11,6 +11,7 @@ namespace car
     {
     public:
         virtual bool Run() = 0;
+        virtual ~BaseChecker(){};
     };
 
 } //namespace car

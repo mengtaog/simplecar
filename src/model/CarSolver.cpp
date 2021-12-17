@@ -1,17 +1,22 @@
 #include "CarSolver.h"
-
+#include <algorithm>
 using namespace Minisat;
 
 namespace  car
 {
 	CarSolver::CarSolver(AigerModel* model) : m_model(model)
 	{
-		m_maxFlag = model->GetMaxId();
+		m_maxFlag = model->GetMaxId()+1;
+		auto& clause = m_model->GetClause();
+		for (int i = 0; i < clause.size(); ++i)
+		{
+			AddClause(clause[i]);
+		}
 	}
 
 	CarSolver::~CarSolver()
 	{
-		
+		;
 	}
 
 	bool CarSolver::SolveWithAssumption()
@@ -57,26 +62,22 @@ namespace  car
 	void CarSolver::AddClause(const std::vector<int>& clause)
     {
         vec<Lit> literals;
-
         for (int i = 0; i < clause.size(); ++i)
         {
             literals.push(GetLit(clause[i]));
         }
         bool result = addClause(literals);
-        if (!result)
-        {
-            //placeholder
-        }
+        assert (result != false);
     }
 
-	void CarSolver::AddClause(const std::vector<int>& clause, int frameLevel)
+	void CarSolver::AddUnsatisfiableCore(const std::vector<int>& clause, int frameLevel)
 	{
 		int flag = GetFrameFlag(frameLevel);
 		vec<Lit> literals;
 		literals.push(GetLit(-flag));
 		for (int i = 0; i < clause.size(); ++i)
         {
-            literals.push(GetLit(clause[i]));
+            literals.push(GetLit(-m_model->GetPrime(clause[i])));
         }
         bool result = addClause(literals);
         if (!result)
@@ -85,20 +86,22 @@ namespace  car
         }
 	}
 
-    std::vector<int>* CarSolver::GetAssignment()
+    std::pair<std::vector<int>*, std::vector<int>* > CarSolver::GetAssignment()
 	{
 		assert(m_model->GetNumInputs() < nVars());
-		std::vector<int>* result = new std::vector<int>();
-		result->reserve(m_model->GetNumInputs() + m_model->GetNumLatches());
+		std::vector<int>* inputs = new std::vector<int>();
+		std::vector<int>* latches = new std::vector<int>();
+		inputs->reserve(m_model->GetNumInputs());
+		latches->reserve(m_model->GetNumLatches());
 		for (int i = 0; i <m_model->GetNumInputs(); ++i)
 		{
 			if (model[i] == l_True)
 			{
-				result->emplace_back(i+1);
+				inputs->emplace_back(i+1);
 			}
 			else if (model[i] == l_False)
 			{
-				result->emplace_back(-i-1);
+				inputs->emplace_back(-i-1);
 			}
 		}
 		for (int i = m_model->GetNumInputs(), end = m_model->GetNumInputs() + m_model->GetNumLatches(); i < end; ++i)
@@ -107,24 +110,54 @@ namespace  car
 			lbool val = model[abs(p)-1];
 			if ((val == l_True && p > 0) || (val == l_False && p < 0))
 			{
-				result->emplace_back(i+1);
+				latches->emplace_back(i+1);
 			}
 			else
 			{
-				result->emplace_back(-i-1);
+				latches->emplace_back(-i-1);
 			}
 		}
-		return result;
+		return std::pair<std::vector<int>*, std::vector<int>* >(inputs, latches);
 	}
 
-    void CarSolver::GetUnsatisfiableCoreFromBad(std::vector<int>& out)
+    void CarSolver:: GetUnsatisfiableCoreFromBad(std::vector<int>& out, int badId)
 	{
 		std::vector<int> uc;
+		int val;
 		for (int i = 0; i < conflict.size(); ++i)
 		{
-			uc.emplace_back(-GetLiteralId(conflict[i]));
+			val = -GetLiteralId(conflict[i]);
+			if (m_model->IsLatch(val))
+			{
+				uc.emplace_back(val);
+			}
 		}
+		std::sort(uc.begin(), uc.end(), cmp);
 		out.swap(uc);
+	}
+
+	void CarSolver::GetUnsatisfiableCore(std::vector<int>& out)
+	{
+		std::vector<int> uc;
+		int val;
+		for (int i = 0; i < conflict.size(); ++i)
+		{
+			val = -GetLiteralId(conflict[i]);
+			if (m_model->IsLatch(val))
+			{
+				uc.emplace_back(val);
+			}
+		}
+		std::sort(uc.begin(), uc.end(), cmp);
+		out.swap(uc);
+	}
+
+	void CarSolver::AddNewFrame(const std::vector<std::vector<int> >& frame, int frameLevel)
+	{
+		for (int i = 0; i < frame.size(); ++i)
+		{
+			AddUnsatisfiableCore(frame[i], frameLevel);
+		}
 	}
 
     bool CarSolver::SolveWithAssumptionAndBad(std::vector<int>& assumption, int badId)
