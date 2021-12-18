@@ -57,6 +57,7 @@ public:
     int GetNumInputs() {return m_numInputs;}
     int GetNumLatches() {return m_numLatches;}
     int GetMaxId() {return m_maxId;}
+    int GetOutputsStart() {return m_outputsStart; }
     std::vector<int>& GetInitialState() { return m_initialState; }
     std::vector<int>& GetOutputs() { return m_outputs;} 
     int GetPrime(const int id) 

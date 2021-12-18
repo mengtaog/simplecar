@@ -13,7 +13,7 @@ namespace car
 class CarSolver: public ISolver, public Minisat::Solver
 {
 public:
-	CarSolver(AigerModel* model);
+	CarSolver();
 	~CarSolver();
     void GetUnsatisfiableCoreFromBad(std::vector<int>& out, int badId) override;
 	void AddClause(const std::vector<int>& clause) override;
@@ -29,7 +29,7 @@ public:
 	inline void AddConstraintOr(const std::vector<std::vector<int> > frame);
 	inline void AddConstraintAnd(const std::vector<std::vector<int> > frame);
 	inline void FlipLastConstrain();
-private:
+protected:
 	static bool cmp(int a, int b)
 	{
 		return abs(a) < abs(b);

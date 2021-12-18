@@ -1,5 +1,4 @@
 #include "BackwardChecker.h"
-#include "CarSolver.h"
 #include <stack>
 #include <string>
 namespace car
@@ -36,7 +35,7 @@ namespace car
 		{
 			int badId = m_model->GetOutputs().at(i);
 			bool result = Check(badId);
-			PrintUC();
+			//PrintUC();
 			if (result)
 			{
 				m_log->PrintSafe(i);
@@ -170,12 +169,13 @@ namespace car
 			m_overSequence.GetFrame(frameStep, lastFrame);
 			m_mainSolver->AddNewFrame(lastFrame, frameStep);
 			m_overSequence.effectiveLevel++;
-			/*
+			
+			
 			if (isInvExisted())
 			{
 				//placeholder
 				return true;
-			}*/
+			}
 		}
 	}
 		
@@ -186,7 +186,8 @@ namespace car
 		m_overSequence = OverSequence(m_model->GetNumInputs());
 		m_underSequence = UnderSequence();
 		m_underSequence.push(m_initialState);
-		m_mainSolver = new CarSolver(m_model);
+		m_mainSolver = new MainSolver(m_model);
+		m_invSolver = new InvSolver(m_model);
 	}
 
 	void BackwardChecker::AddUnsatisfiableCore(std::vector<int>& uc, int frameLevel)
@@ -217,7 +218,7 @@ namespace car
 	{
 		if (m_invSolver == nullptr)
 		{
-			m_invSolver = new CarSolver(m_model);
+			m_invSolver = new InvSolver(m_model);
 		}
 		bool result = false;
 		for (int i = 0; i < m_overSequence.GetLength(); ++i)
@@ -256,7 +257,7 @@ namespace car
 		}
 
 		m_invSolver->AddConstraintAnd(frame);
-		bool result = m_invSolver->SolveWithAssumption();
+ 		bool result = !m_invSolver->SolveWithAssumption();
 		m_invSolver->FlipLastConstrain();
 		m_invSolver->AddConstraintOr(frame);
 		return result;

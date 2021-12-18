@@ -6,6 +6,8 @@
 #include "OverSequence.h"
 #include "UnderSequence.h"
 #include "ISolver.h"
+#include "MainSolver.h"
+#include "InvSolver.h"
 #include "Task.h"
 #include "Log.h"
 #include <assert.h>

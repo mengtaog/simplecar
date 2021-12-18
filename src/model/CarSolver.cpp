@@ -4,15 +4,7 @@ using namespace Minisat;
 
 namespace  car
 {
-	CarSolver::CarSolver(AigerModel* model) : m_model(model)
-	{
-		m_maxFlag = model->GetMaxId()+1;
-		auto& clause = m_model->GetClause();
-		for (int i = 0; i < clause.size(); ++i)
-		{
-			AddClause(clause[i]);
-		}
-	}
+	CarSolver::CarSolver() {}
 
 	CarSolver::~CarSolver()
 	{
@@ -194,8 +186,8 @@ namespace  car
 			{
 				AddClause(std::vector<int> {-flag, frame[i][j]});
 			}
-			AddClause(clause);
 		}
+		AddClause(clause);
 	}
 
 	inline void CarSolver::AddConstraintAnd(const std::vector<std::vector<int> > frame)
@@ -204,7 +196,7 @@ namespace  car
 		for (int i = 0; i < frame.size(); ++i)
 		{
 			std::vector<int> clause;
-			for (int j = 0; i < frame[i].size(); ++i)
+			for (int j = 0; j < frame[i].size(); ++j)
 			{
 				clause.push_back(-frame[i][j]);
 			}
@@ -217,8 +209,8 @@ namespace  car
 	inline void CarSolver::FlipLastConstrain()
 	{
 		Lit lit = m_assumptions.last();
-		assumptions.pop();
-		assumptions.push(~lit);
+		m_assumptions.pop();
+		m_assumptions.push(~lit);
 	}
 
 #pragma region private
