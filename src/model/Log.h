@@ -57,13 +57,26 @@ public:
 
     void PrintUcNums(std::vector<int> &uc, OverSequence& sequence)
     {
+        m_res<<"UNSAT"<<std::endl;
         for (int i = 0; i < uc.size(); ++i)
         {
             m_res<<uc[i]<<" ";
         }
+        m_res<<std::endl<<"Frame:\t";
         for (int i = 0; i < sequence.GetLength(); ++i)
         {
             m_res<<sequence[i].size()<<" ";
+        }
+        m_res<<std::endl;
+    }
+
+    void PrintSAT(std::vector<int>& vec, int frameLevel)
+    {
+        m_res<<"----------------------"<<std::endl;
+        m_res<<"SAT, frameLevel: "<<frameLevel<<std::endl;
+        for (int i = 0; i < vec.size(); ++i)
+        {
+            m_res<<vec[i]<<" ";
         }
         m_res<<std::endl;
     }

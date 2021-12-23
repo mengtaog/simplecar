@@ -131,9 +131,10 @@ namespace car
 				}
 				task.isLocated = false;
 
-				if (task.frameLevel == -1)
-				{
+ 				if (task.frameLevel == -1)
+				{ 
 					m_log->Tick();
+					m_log->PrintSAT(*(task.state->latches), task.frameLevel);
 					bool result = m_mainSolver->SolveWithAssumptionAndBad(*(task.state->latches), badId);
 					m_log->StatMainSolver();
 					if (result)
@@ -155,11 +156,21 @@ namespace car
 						m_log->Tick();
 						AddUnsatisfiableCore(uc, task.frameLevel+1);
 						m_log->StatUpdateUc();
-						task.frameLevel++;
+						m_log->PrintUcNums(uc, m_overSequence); //test
+ 						task.frameLevel++;
+						if (task.frameLevel+1 >= m_overSequence.GetLength() || !m_overSequence.IsBlockedByFrame(*(task.state->latches), task.frameLevel+1))
+						{
+							task.isLocated = true;
+						}
+						else
+						{
+							workingStack.pop();
+						}
 						continue;
 					}
 				}
 				m_log->Tick();
+				m_log->PrintSAT(*(task.state->latches), task.frameLevel);
 				bool result = m_mainSolver->SolveWithAssumption(*(task.state->latches), task.frameLevel);
 				m_log->StatMainSolver();
 				if (result)
@@ -167,7 +178,7 @@ namespace car
 					//Solver return SAT, get a new State, then continue
 					auto pair = m_mainSolver->GetAssignment();
 					State* newState = new State (task.state, pair.first, pair.second, task.state->depth+1);
-					m_underSequence.push(newState);
+					m_underSequence.push(newState);                                 
 					int newFrameLevel = GetNewLevel(newState);
 					workingStack.emplace(newState, newFrameLevel, true);
 					continue;
@@ -184,7 +195,16 @@ namespace car
 					m_log->Tick();
 					AddUnsatisfiableCore(uc, task.frameLevel+1);
 					m_log->StatUpdateUc();
+					m_log->PrintUcNums(uc, m_overSequence);
 					task.frameLevel++;
+					if (task.frameLevel+1 < m_overSequence.GetLength() && !m_overSequence.IsBlockedByFrame(*(task.state->latches), task.frameLevel+1))
+					{
+						task.isLocated = true;
+					}
+					else
+					{
+						workingStack.pop();
+					}
 					continue;
 				}
 			}
