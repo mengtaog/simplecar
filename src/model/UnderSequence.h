@@ -9,6 +9,16 @@ namespace car
 class UnderSequence
 {
 public:
+    ~UnderSequence()
+    {
+        for (int i = 0; i < m_sequence.size(); ++i)
+        {
+            for (int j = 0; j <m_sequence[i].size(); ++j)
+            {
+                delete m_sequence[i][j];
+            }
+        }
+    }
     void push(State* state)
     {
         while(m_sequence.size() <= state->depth)

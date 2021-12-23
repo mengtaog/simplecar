@@ -23,7 +23,6 @@ int main(int argc, char** argv)
     
     BaseChecker* checker = new BackwardChecker(settings, aigerModel);
     checker->Run();
-    delete aigerModel;
     delete checker;
     return 0;
 }
@@ -31,12 +30,11 @@ int main(int argc, char** argv)
 void PrintUsage()
 {
     printf ("Usage: simplecar <-f|-b> [-e|-v|-h] <-begin|-end> <-interation|-rotation|-interation -rotation> <aiger file> <output directory>\n");
+    printf ("       -timeout        set timeout\n");   
     printf ("       -f              forward checking (Default = backward checking)\n");
     printf ("       -b              backward checking \n");
     printf ("       -begin          state numeration from begin of the sequence\n");
     printf ("       -end            state numeration from end of the sequence\n");
-    printf ("       -interaion      enable intersection heuristic\n");
-    printf ("       -rotation       enable rotation heurisitc\n");
     printf ("       -e              print witness (Default = off)\n");
     printf ("       -v              print verbose information (Default = off)\n");
     printf ("       -h              print help information\n");
@@ -60,13 +58,9 @@ Settings GetArgv(int argc, char** argv)
         {
             settings.forward = false;
         }
-        else if (strcmp (argv[i], "-v") == 0)
+        else if (strcmp (argv[i], "-timeout") == 0)
         {
-            settings.verbose = true;
-        }
-        else if (strcmp (argv[i], "-e") == 0)
-        {
-            settings.evidence = true;
+            settings.timelimit = stoi(argv[++i]);
         }
         else if (!hasSetInputDir)
         {

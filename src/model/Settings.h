@@ -15,7 +15,7 @@ struct Settings
     bool restart = false;
     bool gv = false;
     bool begin = false;
-    bool end = true;
+    bool end = false;
     bool inter = false;
     bool rotate = false;
     bool inputS = false;

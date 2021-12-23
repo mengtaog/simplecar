@@ -9,7 +9,7 @@ CPPSOURCES = src/check/BackwardChecker.cpp src/model/AigerModel.cpp src/model/Ca
 OBJS = BackwardChecker.o AigerModel.o CarSolver.o State.o main.o aiger.o MainSolver.o InvSolver.o\
 	Solver.o Options.o System.o 
 
-CFLAG = -I../ -I./src/sat/minisat -I./src/model -I./src/check -I./src/sat/minisat/core -D__STDC_LIMIT_MACROS -D __STDC_FORMAT_MACROS -c -g -fpermissive
+CFLAG = -I../ -I./src/sat/minisat -I./src/model -I./src/check -I./src/sat/minisat/core -D__STDC_LIMIT_MACROS -D __STDC_FORMAT_MACROS -c -g -fpermissive 
 #CFLAG = -I../ -I./glucose -D__STDC_LIMIT_MACROS -D __STDC_FORMAT_MACROS -c -g 
 
 LFLAG = -g -lz -lpthread 

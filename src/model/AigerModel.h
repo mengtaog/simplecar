@@ -56,6 +56,7 @@ public:
 #pragma region get & set
     int GetNumInputs() {return m_numInputs;}
     int GetNumLatches() {return m_numLatches;}
+    int GetNumOutputs() {return m_numOutputs;}
     int GetMaxId() {return m_maxId;}
     int GetOutputsStart() {return m_outputsStart; }
     std::vector<int>& GetInitialState() { return m_initialState; }
