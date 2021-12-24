@@ -7,7 +7,7 @@ namespace car
 	{
 		State::numInputs = model->GetNumInputs();
 		State::numLatches = model->GetNumLatches(); 
-		m_log = new Log(settings.outputDir + GetFileName(settings.aigFilePath), settings.timelimit/model->GetNumOutputs());
+		m_log = new Log(settings.outputDir + GetFileName(settings.aigFilePath), settings.timelimit/model->GetNumOutputs(), model);
 		const std::vector<int>& init = model->GetInitialState();
 		std::vector<int>* inputs = new std::vector<int>(State::numInputs, 0);
 		std::vector<int>* latches = new std::vector<int>();
@@ -53,22 +53,25 @@ namespace car
 	bool BackwardChecker::Check(int badId)
 	{
 #pragma region early stage
-		if (m_model->IsTrue(badId))
-		{
-			//placeholder
-			return true;
-		}
-		else if (m_model->IsFalse(badId))
+		if (m_model->GetTrueId() == badId)
 		{
 			//placeholder
 			return false;
+		}
+		else if (m_model->GetFalseId() == badId)
+		{
+			//placeholder
+			return true;
 		}
 
 		Init();
 
 		if (ImmediateSatisfiable(badId))
 		{
-			return true;
+			auto pair = m_mainSolver->GetAssignment();
+			State* newState = new State (m_initialState, pair.first, pair.second, 1);
+			m_log->lastState = newState;
+			return false;
 		}
 
 		std::vector<int> uc;
@@ -81,6 +84,9 @@ namespace car
 			return true;
 		}
 		m_overSequence.Insert(uc, 0);
+#ifdef __DEBUG__
+		m_log->PrintUcNums(uc, m_overSequence);
+#endif
 		std::vector<std::vector<int> > frame;
 		m_overSequence.GetFrame(0, frame);
 		m_mainSolver->AddNewFrame(frame, 0);
@@ -134,13 +140,19 @@ namespace car
  				if (task.frameLevel == -1)
 				{ 
 					m_log->Tick();
+#ifdef __DEBUG__
 					m_log->PrintSAT(*(task.state->latches), task.frameLevel);
+#endif
 					bool result = m_mainSolver->SolveWithAssumptionAndBad(*(task.state->latches), badId);
 					m_log->StatMainSolver();
 					if (result)
 					{
 						//placeholder, get counterexample
+#ifdef __DEBUG__
+						auto pair = m_mainSolver->GetAssignment(m_log->m_res);
+#else
 						auto pair = m_mainSolver->GetAssignment();
+#endif
 						State* newState = new State (task.state, pair.first, pair.second, task.state->depth+1);
 						m_log->lastState = newState;
 						return false;
@@ -156,8 +168,11 @@ namespace car
 						m_log->Tick();
 						AddUnsatisfiableCore(uc, task.frameLevel+1);
 						m_log->StatUpdateUc();
+#ifdef __DEBUG__
 						m_log->PrintUcNums(uc, m_overSequence); //test
+#endif
  						task.frameLevel++;
+						 //notes 4
 						if (task.frameLevel+1 >= m_overSequence.GetLength() || !m_overSequence.IsBlockedByFrame(*(task.state->latches), task.frameLevel+1))
 						{
 							task.isLocated = true;
@@ -166,17 +181,24 @@ namespace car
 						{
 							workingStack.pop();
 						}
+						//end notes 4
 						continue;
 					}
 				}
 				m_log->Tick();
+#ifdef __DEBUG__
 				m_log->PrintSAT(*(task.state->latches), task.frameLevel);
+#endif
 				bool result = m_mainSolver->SolveWithAssumption(*(task.state->latches), task.frameLevel);
 				m_log->StatMainSolver();
 				if (result)
 				{
 					//Solver return SAT, get a new State, then continue
+#ifdef __DEBUG__
+					auto pair = m_mainSolver->GetAssignment(m_log->m_res);
+#else
 					auto pair = m_mainSolver->GetAssignment();
+#endif
 					State* newState = new State (task.state, pair.first, pair.second, task.state->depth+1);
 					m_underSequence.push(newState);                                 
 					int newFrameLevel = GetNewLevel(newState);
@@ -195,8 +217,11 @@ namespace car
 					m_log->Tick();
 					AddUnsatisfiableCore(uc, task.frameLevel+1);
 					m_log->StatUpdateUc();
+#ifdef __DEBUG__
 					m_log->PrintUcNums(uc, m_overSequence);
+#endif
 					task.frameLevel++;
+					//notes 4
 					if (task.frameLevel+1 < m_overSequence.GetLength() && !m_overSequence.IsBlockedByFrame(*(task.state->latches), task.frameLevel+1))
 					{
 						task.isLocated = true;
@@ -205,6 +230,7 @@ namespace car
 					{
 						workingStack.pop();
 					}
+					//end notes 4
 					continue;
 				}
 			}

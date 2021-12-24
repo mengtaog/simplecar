@@ -56,7 +56,7 @@ public:
 	static int numInputs;
 	static int numLatches;
 	int depth;
-	State* preState;
+	State* preState = nullptr;
 	std::vector<int>* inputs;
 	std::vector<int>* latches;
 	

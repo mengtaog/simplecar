@@ -24,8 +24,11 @@ public:
 	bool SolveWithAssumption() override;
 	inline void AddAssumption(int id) override {m_assumptions.push(GetLit(id));}
 	bool SolveWithAssumption(std::vector<int>& assumption, int frameLevel) override;
+#ifdef __DEBUG__
+	std::pair<std::vector<int>*, std::vector<int>* > GetAssignment(std::ofstream& out) override;
+#else
 	std::pair<std::vector<int>*, std::vector<int>* > GetAssignment() override;
-
+#endif
 	inline void AddConstraintOr(const std::vector<std::vector<int> > frame);
 	inline void AddConstraintAnd(const std::vector<std::vector<int> > frame);
 	inline void FlipLastConstrain();

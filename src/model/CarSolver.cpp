@@ -78,7 +78,69 @@ namespace  car
         }
 	}
 
-    std::pair<std::vector<int>*, std::vector<int>* > CarSolver::GetAssignment()
+#ifdef __DEBUG__
+    std::pair<std::vector<int>*, std::vector<int>* > CarSolver::GetAssignment(std::ofstream& out)
+	{
+		assert(m_model->GetNumInputs() < nVars());
+		std::vector<int>* inputs = new std::vector<int>();
+		std::vector<int>* latches = new std::vector<int>();
+		inputs->reserve(m_model->GetNumInputs());
+		latches->reserve(m_model->GetNumLatches());
+		//
+		out<<"Model: "<<std::endl;
+		for (int i = 0; i < nVars(); ++i)
+		{
+			if (model[i] == l_True)
+			{
+				out<<i+1<<" ";
+			}
+			else if (model[i] == l_False)
+			{
+				out<<-i-1<<" ";
+			}
+		}
+		out<<std::endl<<"After ShrinkModel: "<<std::endl;
+		//
+		for (int i = 0; i <m_model->GetNumInputs(); ++i)
+		{
+			if (model[i] == l_True)
+			{
+				inputs->emplace_back(i+1);
+			}
+			else if (model[i] == l_False)
+			{
+				inputs->emplace_back(-i-1);
+			}
+		}
+		for (int i = m_model->GetNumInputs(), end = m_model->GetNumInputs() + m_model->GetNumLatches(); i < end; ++i)
+		{
+			int p = m_model->GetPrime(i+1);
+			lbool val = model[abs(p)-1];
+			if ((val == l_True && p > 0) || (val == l_False && p < 0))
+			{
+				latches->emplace_back(i+1);
+			}
+			else
+			{
+				latches->emplace_back(-i-1);
+			}
+		}
+		//
+		for (auto it = inputs->begin(); it != inputs->end(); ++it)
+		{
+			out<<*it<<" ";
+		}
+		for (auto it = latches->begin(); it != latches->end(); ++it)
+		{
+			out<<*it<<" ";
+		}
+		out<<std::endl;
+
+		//
+		return std::pair<std::vector<int>*, std::vector<int>* >(inputs, latches);
+	}
+#else
+	std::pair<std::vector<int>*, std::vector<int>* > CarSolver::GetAssignment()
 	{
 		assert(m_model->GetNumInputs() < nVars());
 		std::vector<int>* inputs = new std::vector<int>();
@@ -111,6 +173,7 @@ namespace  car
 		}
 		return std::pair<std::vector<int>*, std::vector<int>* >(inputs, latches);
 	}
+#endif
 
     void CarSolver:: GetUnsatisfiableCoreFromBad(std::vector<int>& out, int badId)
 	{
@@ -119,7 +182,7 @@ namespace  car
 		for (int i = 0; i < conflict.size(); ++i)
 		{
 			val = -GetLiteralId(conflict[i]);
-			if (m_model->IsLatch(val))
+			if (m_model->IsLatch(val) && val != badId)
 			{
 				uc.emplace_back(val);
 			}

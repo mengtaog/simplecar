@@ -7,17 +7,20 @@
 #include <time.h>
 #include <stack>
 #include "OverSequence.h"
+#include "AigerModel.h"
 namespace car
 {
 
 class Log
 {
 public:
-    Log(std::string outPath, int inTimelimit)
+    Log(std::string outPath, int inTimelimit, AigerModel* model) : m_model(model)
     {
         m_res.open(outPath + ".res");
         m_log.open(outPath + ".log");
         m_timelimit = static_cast<double>(inTimelimit);
+        lastState = nullptr;
+        m_begin = clock();
     }
 
     ~Log()
@@ -27,25 +30,38 @@ public:
     }
     void PrintCounterExample(int badNo)
     {
+        
+        m_res <<"1"<<std::endl<<"b"<<badNo<<std::endl;
         if (lastState == nullptr)
         {
-            return;
+            for (int i = 0; i < m_model->GetNumLatches(); ++i)
+            {
+                m_res<<"0";
+            }
+            m_res<<std::endl;
+            for (int i = 0; i < m_model->GetNumInputs(); ++i)
+            {
+                m_res<<"0";
+            }
+            m_res<<std::endl;
         }
-        m_res <<"1"<<std::endl<<"b"<<badNo<<std::endl;
-        std::stack<State*> trace;
-        State* state = lastState;
-        while (state != nullptr)
+        else
         {
-            trace.push(state);
-            state = state->preState;
-        }
-        m_res << trace.top()->GetValueOfLatches()<<std::endl;
-        //m_res << trace.top()->GetValueOfInputs()<<std::endl;
-        trace.pop();
-        while(!trace.empty())
-        {
-            m_res<<trace.top()->GetValueOfInputs()<<std::endl;
+            std::stack<State*> trace;
+            State* state = lastState;
+            while (state != nullptr)
+            {
+                trace.push(state);
+                state = state->preState;
+            }
+            m_res << trace.top()->GetValueOfLatches()<<std::endl;
+            //m_res << trace.top()->GetValueOfInputs()<<std::endl;
             trace.pop();
+            while(!trace.empty())
+            {
+                m_res<<trace.top()->GetValueOfInputs()<<std::endl;
+                trace.pop();
+            }
         }
         m_res<<"."<<std::endl;
     }
@@ -143,18 +159,19 @@ public:
     }
 
     State* lastState;
-
+    std::ofstream m_res;
 private:
-    int m_mainSolverCalls;
-    int m_invSolverCalls;
-    double m_mainSolverTime;
-    double m_invSolverTime;
-    double m_getNewLevelTime;
-    double m_updateUcTime;
-    double m_timelimit;
+    int m_mainSolverCalls = 0;
+    int m_invSolverCalls = 0;
+    double m_mainSolverTime = 0;
+    double m_invSolverTime = 0;
+    double m_getNewLevelTime = 0;
+    double m_updateUcTime = 0;
+    double m_timelimit = 0;
+    AigerModel* m_model;
     clock_t m_tick;
     clock_t m_begin;
-    std::ofstream m_res;
+    
     std::ofstream m_log;
     
 };

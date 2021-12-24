@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "State.h"
+#include <fstream>
 namespace car
 {
 
@@ -17,7 +18,11 @@ public:
 	virtual bool SolveWithAssumptionAndBad(std::vector<int>& assumption, int badId) = 0;
 	virtual bool SolveWithAssumption() = 0;
 	virtual bool SolveWithAssumption(std::vector<int>& assumption, int frameLevel) = 0;
+#ifdef __DEBUG__
+	virtual std::pair<std::vector<int>*, std::vector<int>* > GetAssignment(std::ofstream& out) = 0;
+#else
 	virtual std::pair<std::vector<int>*, std::vector<int>* > GetAssignment() = 0;
+#endif
 	inline virtual void AddConstraintOr(const std::vector<std::vector<int> > frame) = 0;
 	inline virtual void AddConstraintAnd(const std::vector<std::vector<int> > frame) = 0;
 	inline virtual void AddAssumption(int id) = 0;
