@@ -1,6 +1,7 @@
 #include "BackwardChecker.h"
 #include <stack>
 #include <string>
+
 namespace car
 {
 	BackwardChecker::BackwardChecker(Settings settings, AigerModel* model) : m_settings(settings), m_model(model)
@@ -64,11 +65,15 @@ namespace car
 			return true;
 		}
 
-		Init();
+ 		Init();
 
 		if (ImmediateSatisfiable(badId))
 		{
+#ifdef __DEBUG__
+			auto pair = m_mainSolver->GetAssignment(m_log->m_res);
+#else
 			auto pair = m_mainSolver->GetAssignment();
+#endif
 			State* newState = new State (m_initialState, pair.first, pair.second, 1);
 			m_log->lastState = newState;
 			return false;
@@ -99,6 +104,7 @@ namespace car
 		std::stack<Task> workingStack;
 		while (true)
 		{
+			m_log->PrintFramesInfo(m_overSequence);
 			m_minUpdateLevel = m_overSequence.GetLength();
 			if (m_settings.end)
 			{
@@ -173,6 +179,7 @@ namespace car
 #endif
  						task.frameLevel++;
 						 //notes 4
+						 /*
 						if (task.frameLevel+1 >= m_overSequence.GetLength() || !m_overSequence.IsBlockedByFrame(*(task.state->latches), task.frameLevel+1))
 						{
 							task.isLocated = true;
@@ -181,6 +188,7 @@ namespace car
 						{
 							workingStack.pop();
 						}
+						*/
 						//end notes 4
 						continue;
 					}
@@ -222,6 +230,7 @@ namespace car
 #endif
 					task.frameLevel++;
 					//notes 4
+					/*
 					if (task.frameLevel+1 < m_overSequence.GetLength() && !m_overSequence.IsBlockedByFrame(*(task.state->latches), task.frameLevel+1))
 					{
 						task.isLocated = true;
@@ -230,6 +239,7 @@ namespace car
 					{
 						workingStack.pop();
 					}
+					*/
 					//end notes 4
 					continue;
 				}

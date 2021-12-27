@@ -28,6 +28,17 @@ public:
         m_res.close();
         m_log.close();
     }
+
+    void PrintFramesInfo(OverSequence& sequence)
+    {
+        m_log<<"Frame "<<sequence.GetLength()-1<<std::endl;
+        for (int i = 0; i < sequence.GetLength(); ++i)
+        {
+            m_log<<sequence[i].size()<<" ";
+        }
+        m_log<<std::endl;
+    }
+
     void PrintCounterExample(int badNo)
     {
         
@@ -99,12 +110,12 @@ public:
 
     void PrintStatistics()
     {
-        m_log<<"Total Time:\t"<<static_cast<double>(clock()-m_begin)/CLOCKS_PER_SEC<<" seconds"<<std::endl;
         m_log<<"MainSolverCalls:\t"<<m_mainSolverCalls<<std::endl;
         m_log<<"MainSolver takes:\t"<<m_mainSolverTime<<" seconds"<<std::endl;
         m_log<<"InvSolver takes:\t"<<m_invSolverTime<<" seconds"<<std::endl;
         m_log<<"GetNewLevel Procedure takes:\t"<<m_getNewLevelTime<<" seconds"<<std::endl;
         m_log<<"Update uc takes:\t"<<m_updateUcTime<<" seconds"<<std::endl<<std::endl;
+        m_log<<"Total Time:\t"<<static_cast<double>(clock()-m_begin)/CLOCKS_PER_SEC<<" seconds"<<std::endl;
     }
 
     void ResetClock()
