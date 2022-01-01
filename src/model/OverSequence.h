@@ -3,11 +3,11 @@
 
 #include <vector>
 #include <cmath>
-
+#include "IOverSequence.h"
 namespace car
 {
 
-class OverSequence
+class OverSequence : public IOverSequence
 {
 public:
 	OverSequence() {}
@@ -16,81 +16,27 @@ public:
 
 	}
 
-	void Insert(std::vector<int>& uc, int index)
-	{
-		if (index >= m_sequence.size())
-		{
-			m_sequence.emplace_back(std::vector<std::vector<int> >());
-		}
-		std::vector<std::vector<int> > tmp;
-		tmp.reserve(m_sequence[index].size()+1);
-		for (int i = 0; i < m_sequence[index].size(); ++i)
-		{
-			if (!IsImply(m_sequence[index][i], uc))
-			{
-				tmp.push_back(m_sequence[index][i]);
-			}
-		}
-		m_sequence[index].swap(tmp);
-		m_sequence[index].push_back(uc);
-	}
-	void GetFrame(int frameLevel, std::vector<std::vector<int> >& out)
-	{
-		if (frameLevel >= m_sequence.size()) return;
-		out = m_sequence[frameLevel];
-	}
-	bool IsBlockedByFrame(std::vector<int>& state, int frameLevel)
-	{
-		int index;
-		for (int i = 0; i < m_sequence[frameLevel].size(); ++i)//for each uc
-		{
-			bool isBlockedByUc = true;
-			for (int j = 0; j < m_sequence[frameLevel][i].size(); ++j)//for each literal in uc
-			{
-				index = abs(m_sequence[frameLevel][i][j]) - m_numInputs - 1;
-				if (state[index] != m_sequence[frameLevel][i][j])
-				{
-					isBlockedByUc = false;
-					break;
-				}
-			}
-			if (isBlockedByUc)
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-	int GetLength()
-	{
-		return m_sequence.size();
-	}
-	std::vector<std::vector<int> >& operator[] (int i) {return m_sequence[i];}
-	int effectiveLevel;
-private:
-	bool IsImply ( std::vector<int>& v1,  std::vector<int>& v2)
-	{
+	void Insert(std::vector<int>& uc, int index) override;
+	
+	void GetFrame(int frameLevel, std::vector<std::vector<int> >& out) override;
+	
+	bool IsBlockedByFrame(std::vector<int>& state, int frameLevel) override;
+	
+	int GetLength() override;
 
-		if (v1.size () < v2.size ())
-			return false;
-		std::vector<int>::iterator first1 = v1.begin (), first2 = v2.begin (), last1 = v1.end (), last2 = v2.end ();
-		while (first2 != last2) 
-		{
-			if ( (first1 == last1) || comp (*first2, *first1) ) 
-				return false;
-			if ((*first1) == (*first2)) 
-				++ first2;
-			++ first1;
-		}
-		return true;
-	}
+	std::vector<std::vector<int> >& operator[] (int i);
+
+private:
+	bool IsImply ( std::vector<int>& v1,  std::vector<int>& v2);
 
 	bool comp (int i, int j)
 	{
 		return abs (i) < abs(j);
 	}
+	
 	int m_numInputs;
-	std::vector<std::vector<std::vector<int> > > m_sequence;
+	std::vector<std::vector<std::vector<int> > > m_sequence;//frameLevel //uc //literal m_sequence[0][2]
+	//for()
 
 };
 

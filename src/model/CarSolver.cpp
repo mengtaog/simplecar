@@ -140,11 +140,11 @@ namespace  car
 		return std::pair<std::vector<int>*, std::vector<int>* >(inputs, latches);
 	}
 #else
-	std::pair<std::vector<int>*, std::vector<int>* > CarSolver::GetAssignment()
+	std::pair<std::shared_ptr<std::vector<int> >, std::shared_ptr<std::vector<int> > > CarSolver::GetAssignment()
 	{
 		assert(m_model->GetNumInputs() < nVars());
-		std::vector<int>* inputs = new std::vector<int>();
-		std::vector<int>* latches = new std::vector<int>();
+		std::shared_ptr<std::vector<int> > inputs(new std::vector<int>());
+		std::shared_ptr<std::vector<int> > latches(new std::vector<int>());
 		inputs->reserve(m_model->GetNumInputs());
 		latches->reserve(m_model->GetNumLatches());
 		for (int i = 0; i <m_model->GetNumInputs(); ++i)
@@ -171,7 +171,7 @@ namespace  car
 				latches->emplace_back(-i-1);
 			}
 		}
-		return std::pair<std::vector<int>*, std::vector<int>* >(inputs, latches);
+		return std::pair<std::shared_ptr<std::vector<int> >, std::shared_ptr<std::vector<int> > >(inputs, latches);
 	}
 #endif
 

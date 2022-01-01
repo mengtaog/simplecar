@@ -21,3 +21,19 @@ oski3b0i
 pdtswvibs8x8p0
 texasparsesysp3
 这些例子都非常简单，原来均在60s之内解决。
+
+
+6.frameLevel + 2 > m_rotation.size() 的结果和 frameLevel > m_rotation.size() - 2的结果不同
+后者的结果经常出错，猜测m_rotation内部元素类型重载的.size()方法返回的是const类型，对其-2没有生效？？
+
+6.F_[0~4]
+F[0]~F[4]
+each uc in F[i]
+{
+    if (uc is existed in Fi+1)
+
+    if (uc * T * Fi') is unsat
+}
+
+if uc is existed in Fi+1
+for each uc in Fi+1

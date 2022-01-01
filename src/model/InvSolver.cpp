@@ -1,9 +1,9 @@
 #include "InvSolver.h"
 
+
 namespace car
 {
-
-    InvSolver::InvSolver(AigerModel* model)
+    InvSolver::InvSolver(std::shared_ptr<AigerModel> model)
     {
         m_model = model;
         m_maxFlag = model->GetMaxId()+1;

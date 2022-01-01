@@ -4,61 +4,28 @@
 #include <vector>
 #include <string>
 #include <stdlib.h>
-
+#include <memory>
 namespace car
 {
 
 class State
 {
 public:
-	State(State* inPreState, std::vector<int>* inInputs, std::vector<int>* inLatches, int inDepth):
+	State(std::shared_ptr<State> inPreState, std::shared_ptr<std::vector<int> > inInputs, std::shared_ptr<std::vector<int> > inLatches, int inDepth):
 		preState(inPreState), inputs(inInputs), latches(inLatches), depth(inDepth)
 	{
 		
 	}
-	~State() 
-	{
-		delete inputs;
-		delete latches;
-	}
 
-	std::string GetValueOfLatches()
-	{
-		std::string result = "";
-		result.reserve(numLatches);
-		int j = 0;
-		for (int i = 0; i < State::numLatches; ++i)
-		{
-			if (State::numInputs + i + 1 < abs((*latches)[j]))
-			{
-				result += "x";
-			}
-			else
-			{
-				result += (latches->at(j) > 0) ? "1" : "0";
-				++j;
-			}
-		}
-		return result;
-	}
+	std::string GetValueOfLatches();
 
-	std::string GetValueOfInputs()
-	{
-		std::string result = "";
-		result.reserve(numInputs);
-		for (int i = 0; i < numInputs; ++i)
-		{
-			result += (inputs->at(i) > 0) ? "1" : "0";
-		}
-		return result;
-		
-	}
+	std::string GetValueOfInputs();
 	static int numInputs;
 	static int numLatches;
 	int depth;
-	State* preState = nullptr;
-	std::vector<int>* inputs;
-	std::vector<int>* latches;
+	std::shared_ptr<State> preState = nullptr;
+	std::shared_ptr<std::vector<int> > inputs;
+	std::shared_ptr<std::vector<int> > latches;
 	
 };
 

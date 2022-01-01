@@ -4,32 +4,23 @@
 
 namespace car
 {
-	BackwardChecker::BackwardChecker(Settings settings, AigerModel* model) : m_settings(settings), m_model(model)
+	BackwardChecker::BackwardChecker(Settings settings, std::shared_ptr<AigerModel> model) : m_settings(settings)
 	{
+		m_model = model;
 		State::numInputs = model->GetNumInputs();
 		State::numLatches = model->GetNumLatches(); 
-		m_log = new Log(settings.outputDir + GetFileName(settings.aigFilePath), settings.timelimit/model->GetNumOutputs(), model);
+		m_log.reset(new Log(settings.outputDir + GetFileName(settings.aigFilePath), settings.timelimit/model->GetNumOutputs(), model));
 		const std::vector<int>& init = model->GetInitialState();
-		std::vector<int>* inputs = new std::vector<int>(State::numInputs, 0);
-		std::vector<int>* latches = new std::vector<int>();
+		std::shared_ptr<std::vector<int> > inputs(new std::vector<int>(State::numInputs, 0));
+		std::shared_ptr<std::vector<int> > latches(new std::vector<int>());
 		latches->reserve(State::numLatches);
 		
 		for (int i = 0; i < State::numLatches; ++i)
 		{
 			latches->push_back(init[i]);
 		}
-		m_initialState = new State (nullptr, inputs, latches, 0);
+		m_initialState.reset(new State(nullptr, inputs, latches, 0));
 	}
-
-	BackwardChecker::~BackwardChecker()
-	{
-		//delete m_initialState;
-		delete m_mainSolver;
-		delete m_invSolver;
-		delete m_log;
-		delete m_model;
-	}
-
 
 	bool BackwardChecker::Run()
 	{
@@ -74,7 +65,7 @@ namespace car
 #else
 			auto pair = m_mainSolver->GetAssignment();
 #endif
-			State* newState = new State (m_initialState, pair.first, pair.second, 1);
+			std::shared_ptr<State> newState(new State (m_initialState, pair.first, pair.second, 1));
 			m_log->lastState = newState;
 			return false;
 		}
@@ -88,14 +79,14 @@ namespace car
 			//placeholder
 			return true;
 		}
-		m_overSequence.Insert(uc, 0);
+		m_overSequence->Insert(uc, 0);
 #ifdef __DEBUG__
 		m_log->PrintUcNums(uc, m_overSequence);
 #endif
 		std::vector<std::vector<int> > frame;
-		m_overSequence.GetFrame(0, frame);
+		m_overSequence->GetFrame(0, frame);
 		m_mainSolver->AddNewFrame(frame, 0);
-		m_overSequence.effectiveLevel = 0;
+		m_overSequence->effectiveLevel = 0;
 		
 # pragma endregion 
 
@@ -104,8 +95,8 @@ namespace car
 		std::stack<Task> workingStack;
 		while (true)
 		{
-			m_log->PrintFramesInfo(m_overSequence);
-			m_minUpdateLevel = m_overSequence.GetLength();
+			m_log->PrintFramesInfo(m_overSequence.get());
+			m_minUpdateLevel = m_overSequence->GetLength();
 			if (m_settings.end)
 			{
 				for (int i = 0; i < m_underSequence.size(); ++i)
@@ -135,7 +126,7 @@ namespace car
 					m_log->Tick();
 					task.frameLevel = GetNewLevel(task.state, task.frameLevel+1);
 					m_log->StatGetNewLevel();
-					if (task.frameLevel > m_overSequence.effectiveLevel)
+					if (task.frameLevel > m_overSequence->effectiveLevel)
 					{
 						workingStack.pop();
 						continue;
@@ -149,7 +140,9 @@ namespace car
 #ifdef __DEBUG__
 					m_log->PrintSAT(*(task.state->latches), task.frameLevel);
 #endif
-					bool result = m_mainSolver->SolveWithAssumptionAndBad(*(task.state->latches), badId);
+					std::vector<int> assumption;
+					GetAssumption(task.state, task.frameLevel, assumption);
+					bool result = m_mainSolver->SolveWithAssumptionAndBad(assumption, badId);
 					m_log->StatMainSolver();
 					if (result)
 					{
@@ -159,12 +152,13 @@ namespace car
 #else
 						auto pair = m_mainSolver->GetAssignment();
 #endif
-						State* newState = new State (task.state, pair.first, pair.second, task.state->depth+1);
+						std::shared_ptr<State> newState(new State (task.state, pair.first, pair.second, task.state->depth+1));
 						m_log->lastState = newState;
 						return false;
 					}
 					else
 					{
+						PushToRotation(task.state, task.frameLevel);
 						std::vector<int> uc;
 						m_mainSolver->GetUnsatisfiableCoreFromBad(uc, badId);
 						if (uc.empty())
@@ -180,7 +174,7 @@ namespace car
  						task.frameLevel++;
 						 //notes 4
 						 /*
-						if (task.frameLevel+1 >= m_overSequence.GetLength() || !m_overSequence.IsBlockedByFrame(*(task.state->latches), task.frameLevel+1))
+						if (task.frameLevel+1 >= m_overSequence->GetLength() || !m_overSequence->IsBlockedByFrame(*(task.state->latches), task.frameLevel+1))
 						{
 							task.isLocated = true;
 						}
@@ -197,7 +191,11 @@ namespace car
 #ifdef __DEBUG__
 				m_log->PrintSAT(*(task.state->latches), task.frameLevel);
 #endif
-				bool result = m_mainSolver->SolveWithAssumption(*(task.state->latches), task.frameLevel);
+				
+				//bool result = m_mainSolver->SolveWithAssumption(*(task.state->latches), task.frameLevel);
+				std::vector<int> assumption;
+				GetAssumption(task.state, task.frameLevel, assumption);
+				bool result = m_mainSolver->SolveWithAssumption(assumption, task.frameLevel);
 				m_log->StatMainSolver();
 				if (result)
 				{
@@ -207,7 +205,7 @@ namespace car
 #else
 					auto pair = m_mainSolver->GetAssignment();
 #endif
-					State* newState = new State (task.state, pair.first, pair.second, task.state->depth+1);
+					std::shared_ptr<State> newState(new State (task.state, pair.first, pair.second, task.state->depth+1));
 					m_underSequence.push(newState);                                 
 					int newFrameLevel = GetNewLevel(newState);
 					workingStack.emplace(newState, newFrameLevel, true);
@@ -216,6 +214,7 @@ namespace car
 				else
 				{
 					//Solver return UNSAT, get uc, then continue
+					PushToRotation(task.state, task.frameLevel);
 					std::vector<int> uc;
 					m_mainSolver->GetUnsatisfiableCore(uc);
 					if (uc.empty())
@@ -231,7 +230,7 @@ namespace car
 					task.frameLevel++;
 					//notes 4
 					/*
-					if (task.frameLevel+1 < m_overSequence.GetLength() && !m_overSequence.IsBlockedByFrame(*(task.state->latches), task.frameLevel+1))
+					if (task.frameLevel+1 < m_overSequence->GetLength() && !m_overSequence->IsBlockedByFrame(*(task.state->latches), task.frameLevel+1))
 					{
 						task.isLocated = true;
 					}
@@ -246,9 +245,9 @@ namespace car
 			}
 			std::vector<std::vector<int> > lastFrame;
 			frameStep++;
-			m_overSequence.GetFrame(frameStep, lastFrame);
+			m_overSequence->GetFrame(frameStep, lastFrame);
 			m_mainSolver->AddNewFrame(lastFrame, frameStep);
-			m_overSequence.effectiveLevel++;
+			m_overSequence->effectiveLevel++;
 			
 			m_log->Tick();
 			if (isInvExisted())
@@ -264,21 +263,21 @@ namespace car
 
 	void BackwardChecker::Init()
 	{
-		m_overSequence = OverSequence(m_model->GetNumInputs());
+		m_overSequence.reset(new OverSequence(m_model->GetNumInputs()));
 		m_underSequence = UnderSequence();
 		m_underSequence.push(m_initialState);
-		m_mainSolver = new MainSolver(m_model);
-		m_invSolver = new InvSolver(m_model);
+		m_mainSolver.reset(new MainSolver(m_model));
+		m_invSolver.reset(new InvSolver(m_model));
 		m_log->ResetClock();
 	}
 
 	void BackwardChecker::AddUnsatisfiableCore(std::vector<int>& uc, int frameLevel)
 	{
-		if (frameLevel <= m_overSequence.effectiveLevel)
+		if (frameLevel <= m_overSequence->effectiveLevel)
 		{
 			m_mainSolver->AddUnsatisfiableCore(uc, frameLevel);
 		}
-		m_overSequence.Insert(uc, frameLevel);
+		m_overSequence->Insert(uc, frameLevel);
 		if(frameLevel < m_minUpdateLevel)
 		{
 			m_minUpdateLevel = frameLevel;
@@ -300,37 +299,36 @@ namespace car
 	{
 		if (m_invSolver == nullptr)
 		{
-			m_invSolver = new InvSolver(m_model);
+			m_invSolver.reset(new InvSolver(m_model));
 		}
 		bool result = false;
-		for (int i = 0; i < m_overSequence.GetLength(); ++i)
+		for (int i = 0; i < m_overSequence->GetLength(); ++i)
 		{
 			if (IsInvariant(i))
 			{
 				result = true;
 			}
 		}
-		delete m_invSolver;
 		m_invSolver = nullptr;
 		return result;
 	}
 
-	int BackwardChecker::GetNewLevel(State* state, int start = 0)
+	int BackwardChecker::GetNewLevel(std::shared_ptr<State> state, int start = 0)
 	{
-		for (int i = start; i < m_overSequence.GetLength(); ++i)
+		for (int i = start; i < m_overSequence->GetLength(); ++i)
 		{
-			if (!m_overSequence.IsBlockedByFrame(*(state->latches), i))
+			if (!m_overSequence->IsBlockedByFrame(*(state->latches), i))
 			{
 				return i-1;
 			}
 		}
-		return m_overSequence.GetLength()-1; //placeholder
+		return m_overSequence->GetLength()-1; //placeholder
 	}
 
 	bool BackwardChecker::IsInvariant(int frameLevel)
 	{
 		std::vector<std::vector<int> > frame;
-		m_overSequence.GetFrame(frameLevel, frame);
+		m_overSequence->GetFrame(frameLevel, frame);
 
 		if (frameLevel < m_minUpdateLevel)
 		{
@@ -345,15 +343,6 @@ namespace car
 		return result;
 	}
 
-	std::string PrintState(std::vector<int>& vec)
-	{
-		string res = "";
-		for (int i = 0; i < vec.size(); ++i)
-		{
-			res += std::to_string(vec[i]);
-		}
-		return res;
-	}
 
 
 }//namespace car

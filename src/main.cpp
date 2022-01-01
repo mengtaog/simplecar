@@ -3,7 +3,7 @@
 #include "AigerModel.h"
 #include "Settings.h"
 #include <string.h>
-
+#include <memory>
 
 
 
@@ -23,8 +23,7 @@ Settings GetArgv(int argc, char **argv);
 int main(int argc, char** argv)
 {
     Settings settings = GetArgv(argc, argv);
-    AigerModel* aigerModel = new AigerModel(settings.aigFilePath);
-    
+    shared_ptr<AigerModel> aigerModel(new AigerModel(settings.aigFilePath));
     BaseChecker* checker = new BackwardChecker(settings, aigerModel);
     checker->Run();
     delete checker;
@@ -37,10 +36,9 @@ void PrintUsage()
     printf ("       -timeout        set timeout\n");   
     printf ("       -f              forward checking (Default = backward checking)\n");
     printf ("       -b              backward checking \n");
-    printf ("       -begin          state numeration from begin of the sequence\n");
+    printf ("       -inter          active intersection\n");
+    printf ("       -rotation       active rotation\n");
     printf ("       -end            state numeration from end of the sequence\n");
-    printf ("       -e              print witness (Default = off)\n");
-    printf ("       -v              print verbose information (Default = off)\n");
     printf ("       -h              print help information\n");
     printf ("NOTE: -f and -b cannot be used together!\n");
     printf ("NOTE: -begin and -end cannot be used together!\n");
@@ -65,6 +63,14 @@ Settings GetArgv(int argc, char** argv)
         else if (strcmp (argv[i], "-timeout") == 0)
         {
             settings.timelimit = stoi(argv[++i]);
+        }
+        else if (strcmp (argv[i], "-inter") == 0)
+        {
+            settings.inter = true;
+        }
+        else if (strcmp(argv[i], "-rotation") == 0)
+        {
+            settings.rotate = true;
         }
         else if (!hasSetInputDir)
         {

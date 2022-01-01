@@ -9,7 +9,7 @@ namespace car
 class MainSolver : public CarSolver 
 {
 public:
-    MainSolver(AigerModel* model);
+    MainSolver(std::shared_ptr<AigerModel> model);
 private:
 
 };

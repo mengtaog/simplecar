@@ -4,12 +4,10 @@
 #include <vector>
 #include "State.h"
 #include <fstream>
-
+#include <memory>
 
 namespace car
 {
-
-
 
 class ISolver
 {
@@ -25,7 +23,7 @@ public:
 #ifdef __DEBUG__
 	virtual std::pair<std::vector<int>*, std::vector<int>* > GetAssignment(std::ofstream& out) = 0;
 #else
-	virtual std::pair<std::vector<int>*, std::vector<int>* > GetAssignment() = 0;
+	virtual std::pair<std::shared_ptr<std::vector<int> > , std::shared_ptr<std::vector<int> > > GetAssignment() = 0;
 #endif
 	inline virtual void AddConstraintOr(const std::vector<std::vector<int> > frame) = 0;
 	inline virtual void AddConstraintAnd(const std::vector<std::vector<int> > frame) = 0;

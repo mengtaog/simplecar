@@ -15,24 +15,24 @@ public:
         {
             for (int j = 0; j <m_sequence[i].size(); ++j)
             {
-                delete m_sequence[i][j];
+                m_sequence[i][j] = nullptr;
             }
         }
     }
-    void push(State* state)
+    void push(std::shared_ptr<State> state)
     {
         while(m_sequence.size() <= state->depth)
         {
-            m_sequence.emplace_back(std::vector<State*>());
+            m_sequence.emplace_back(std::vector<std::shared_ptr<State> >());
         }
         m_sequence[state->depth].push_back(state);
     }
 
     int size() {return m_sequence.size();}
 
-    std::vector<State*>& operator[] (int i) {return m_sequence[i];}
+    std::vector<std::shared_ptr<State> >& operator[] (int i) {return m_sequence[i];}
 private:
-    std::vector<std::vector<State*> > m_sequence;
+    std::vector<std::vector<std::shared_ptr<State> > > m_sequence;
 };
 
 }//namespace car

@@ -27,7 +27,7 @@ public:
 #ifdef __DEBUG__
 	std::pair<std::vector<int>*, std::vector<int>* > GetAssignment(std::ofstream& out) override;
 #else
-	std::pair<std::vector<int>*, std::vector<int>* > GetAssignment() override;
+	std::pair<std::shared_ptr<std::vector<int> >, std::shared_ptr<std::vector<int> > > GetAssignment() override;
 #endif
 	inline void AddConstraintOr(const std::vector<std::vector<int> > frame);
 	inline void AddConstraintAnd(const std::vector<std::vector<int> > frame);
@@ -44,7 +44,7 @@ protected:
 
     
     int m_maxFlag;
-	AigerModel* m_model;
+	std::shared_ptr<AigerModel> m_model;
 	std::vector<int> m_frameFlags;
 	vec<Lit> m_assumptions;
 };
