@@ -8,9 +8,12 @@ namespace car
 		{
 			m_sequence.emplace_back(std::vector<std::vector<int> >());
 		}
+		int pos = GetInsertPos(uc, index);
 		std::vector<std::vector<int> > tmp;
 		tmp.reserve(m_sequence[index].size()+1);
-		for (int i = 0; i < m_sequence[index].size(); ++i)
+		tmp.insert(tmp.begin(), m_sequence[index].begin(), m_sequence[index].begin()+pos);
+		tmp.push_back(uc);
+		for (int i = pos; i < m_sequence[index].size(); ++i)
 		{
 			if (!IsImply(m_sequence[index][i], uc))
 			{
@@ -18,7 +21,7 @@ namespace car
 			}
 		}
 		m_sequence[index].swap(tmp);
-		m_sequence[index].push_back(uc);
+		//m_sequence[index].push_back(uc);
 	}
 	void OverSequence::GetFrame(int frameLevel, std::vector<std::vector<int> >& out) 
 	{
@@ -52,7 +55,7 @@ namespace car
 		return m_sequence.size();
 	}
 
-    bool OverSequence::IsImply ( std::vector<int>& v1,  std::vector<int>& v2)
+    bool OverSequence::IsImply ( std::vector<int>& v1,  std::vector<int>& v2) //if v2->v1
 	{
 
 		if (v1.size () < v2.size ())

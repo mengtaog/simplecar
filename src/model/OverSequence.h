@@ -31,7 +31,62 @@ private:
 	{
 		return abs (i) < abs(j);
 	}
+
+	bool comp(std::vector<int>& a, std::vector<int>& b)
+	{
+		if (a.size() < b.size())
+		{
+			return true;
+		}
+		else if (a.size() > b.size())
+		{
+			return false;
+		}
+
+		for (int i = 0; i < a.size(); ++i)
+		{
+			if (abs(a[i]) < abs(b[i]))
+			{
+				return true;
+			}
+			else if (abs(a[i]) > abs(b[i]))
+			{
+				return false;
+			}
+		}
+		return true;
+	}
 	
+	int GetInsertPos(std::vector<int>& uc, int frameLevel)
+	{
+		int left = 0, right = m_sequence[frameLevel].size()-1;
+		if (right == -1)
+		{
+			return 0;
+		}
+		int mid;
+		while (left < right)
+		{
+			mid = (left + right)/2;
+			if (comp(m_sequence[frameLevel][mid], uc))
+			{
+				left = mid + 1;
+			}
+			else
+			{
+				right = mid - 1;
+			}
+		}
+		if (comp(m_sequence[frameLevel][left], uc))
+		{
+			return left+1;
+		}
+		else
+		{
+			return left;
+		}
+	}
+
 	int m_numInputs;
 	std::vector<std::vector<std::vector<int> > > m_sequence;//frameLevel //uc //literal m_sequence[0][2]
 	//for()
