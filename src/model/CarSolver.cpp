@@ -178,6 +178,7 @@ namespace  car
     void CarSolver:: GetUnsatisfiableCoreFromBad(std::vector<int>& out, int badId)
 	{
 		std::vector<int> uc;
+		uc.reserve(conflict.size());
 		int val;
 		for (int i = 0; i < conflict.size(); ++i)
 		{
@@ -194,6 +195,7 @@ namespace  car
 	void CarSolver::GetUnsatisfiableCore(std::vector<int>& out)
 	{
 		std::vector<int> uc;
+		uc.reserve(conflict.size());
 		int val;
 		for (int i = 0; i < conflict.size(); ++i)
 		{

@@ -9,17 +9,14 @@ namespace car
 struct Settings
 {
     bool forward = false;
-    bool verbose = false;
-    bool evidence = false;
+    bool propagation = false;
     bool minimal_uc = false;
     bool restart = false;
-    bool gv = false;
-    bool begin = false;
     bool end = false;
     bool inter = false;
     bool rotate = false;
     bool inputS = false;
-    int timelimit = 0; 
+    int timelimit = 0;  
     std::string aigFilePath;
     std::string outputDir;
 };

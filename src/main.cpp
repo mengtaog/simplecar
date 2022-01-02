@@ -38,6 +38,7 @@ void PrintUsage()
     printf ("       -b              backward checking \n");
     printf ("       -inter          active intersection\n");
     printf ("       -rotation       active rotation\n");
+    printf ("       -prop           active propagation\n");
     printf ("       -end            state numeration from end of the sequence\n");
     printf ("       -h              print help information\n");
     printf ("NOTE: -f and -b cannot be used together!\n");
@@ -71,6 +72,10 @@ Settings GetArgv(int argc, char** argv)
         else if (strcmp(argv[i], "-rotation") == 0)
         {
             settings.rotate = true;
+        }
+        else if (strcmp(argv[i], "-prop") == 0)
+        {
+            settings.propagation = true;
         }
         else if (!hasSetInputDir)
         {

@@ -52,8 +52,6 @@ namespace car
 		return m_sequence.size();
 	}
 
-	std::vector<std::vector<int> >& OverSequence::operator[] (int i) {return m_sequence[i];}
-
     bool OverSequence::IsImply ( std::vector<int>& v1,  std::vector<int>& v2)
 	{
 
@@ -70,6 +68,4 @@ namespace car
 		}
 		return true;
 	}
-
-
 }//namespace car

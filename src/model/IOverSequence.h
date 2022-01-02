@@ -17,8 +17,6 @@ public:
 	
 	virtual int GetLength() = 0;
 
-	virtual std::vector<std::vector<int> >& operator[] (int i) = 0;
-
 	int effectiveLevel;
 };
 

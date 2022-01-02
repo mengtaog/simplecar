@@ -249,6 +249,11 @@ namespace car
 			m_mainSolver->AddNewFrame(lastFrame, frameStep);
 			m_overSequence->effectiveLevel++;
 			
+			if (m_settings.propagation)
+			{
+				Propagation();
+			}
+
 			m_log->Tick();
 			if (isInvExisted())
 			{
@@ -263,7 +268,14 @@ namespace car
 
 	void BackwardChecker::Init()
 	{
-		m_overSequence.reset(new OverSequence(m_model->GetNumInputs()));
+		if (m_settings.propagation)
+		{
+			m_overSequence.reset(new OverSequenceForProp(m_model->GetNumInputs()));
+		}
+		else
+		{
+			m_overSequence.reset(new OverSequence(m_model->GetNumInputs()));
+		}
 		m_underSequence = UnderSequence();
 		m_underSequence.push(m_initialState);
 		m_mainSolver.reset(new MainSolver(m_model));

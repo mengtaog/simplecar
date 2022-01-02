@@ -5,6 +5,7 @@
 #include "State.h"
 #include "IOverSequence.h"
 #include "OverSequence.h"
+#include "OverSequenceForProp.h"
 #include "UnderSequence.h"
 #include "ISolver.h"
 #include "MainSolver.h"
@@ -62,7 +63,8 @@ private:
 		{
 			return;
 		}
-	    std::vector<std::vector<int> >& frame = (*m_overSequence)[frameLevel+1];
+	    std::vector<std::vector<int> > frame;
+		m_overSequence->GetFrame(frameLevel+1, frame);
 	    if (frame.size () == 0)  
 		{
 	    	return;
@@ -126,6 +128,37 @@ private:
 			m_rotation.push_back(nullptr);
 		}
 		m_rotation[frameLevel+1] = state->latches;
+	}
+
+	void Propagation()
+	{
+		OverSequenceForProp* sequence = dynamic_cast<OverSequenceForProp*>(m_overSequence.get());
+		for (int frameLevel = 0; frameLevel < sequence->GetLength()-1; ++frameLevel)
+		{
+			std::vector<std::vector<int> >& unpropFrame = sequence->GetUnProp(frameLevel);
+			std::vector<std::vector<int> >& propFrame = sequence->GetProp(frameLevel);
+			std::vector<std::vector<int> > tmp;
+			for (int j = 0; j < unpropFrame.size(); ++j)
+			{	
+				if (sequence->IsBlockedByFrame(unpropFrame[j], frameLevel+1))
+				{
+					propFrame.push_back(unpropFrame[j]);
+					continue;
+				}
+
+				bool result = m_mainSolver->SolveWithAssumption(unpropFrame[j], frameLevel);
+				if (!result)
+				{
+					AddUnsatisfiableCore(unpropFrame[j], frameLevel+1);
+					sequence->InsertIntoProped(unpropFrame[j], frameLevel);
+				}
+				else
+				{
+					tmp.push_back(unpropFrame[j]);
+				}
+			}
+			tmp.swap(unpropFrame);
+		}
 	}
 	
 

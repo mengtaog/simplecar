@@ -26,13 +26,24 @@ texasparsesysp3
 6.frameLevel + 2 > m_rotation.size() 的结果和 frameLevel > m_rotation.size() - 2的结果不同
 后者的结果经常出错，猜测m_rotation内部元素类型重载的.size()方法返回的是const类型，对其-2没有生效？？
 
-6.F_[0~4]
+6.需要构造一个表来维护每个uc是否已经被propagate过。
+方案一：一个hash函数，接受（std::vector<int> uc, int frameLevel）作为输入，输出作为HASH Table的key，用以查寻F_[i][j]是否执行过propagate
+方案二：把overSequence一分为二，执行过propagate的放一起，没执行过propagate的放一起。
+
+
+F_[0~4]
 F[0]~F[4]
 each uc in F[i]
 {
-    if (uc is existed in Fi+1)
+    if (uc is blocked by Fi+1)
+    {
+        continue;
+    }
 
     if (uc * T * Fi') is unsat
+    {
+        uc ---> Fi+1
+    }
 }
 
 if uc is existed in Fi+1

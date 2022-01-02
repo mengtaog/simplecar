@@ -24,8 +24,6 @@ public:
 	
 	int GetLength() override;
 
-	std::vector<std::vector<int> >& operator[] (int i);
-
 private:
 	bool IsImply ( std::vector<int>& v1,  std::vector<int>& v2);
 
