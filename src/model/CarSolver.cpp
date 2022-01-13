@@ -175,45 +175,45 @@ namespace  car
 	}
 #endif
 
-    void CarSolver:: GetUnsatisfiableCoreFromBad(std::vector<int>& out, int badId)
+    std::shared_ptr<std::vector<int> > CarSolver:: GetUnsatisfiableCoreFromBad(int badId)
 	{
-		std::vector<int> uc;
-		uc.reserve(conflict.size());
+		std::shared_ptr<std::vector<int> > uc(new std::vector<int>());
+		uc->reserve(conflict.size());
 		int val;
 		for (int i = 0; i < conflict.size(); ++i)
 		{
 			val = -GetLiteralId(conflict[i]);
 			if (m_model->IsLatch(val) && val != badId)
 			{
-				uc.emplace_back(val);
+				uc->emplace_back(val);
 			}
 		}
-		std::sort(uc.begin(), uc.end(), cmp);
-		out.swap(uc);
+		std::sort(uc->begin(), uc->end(), cmp);
+		return uc;
 	}
 
-	void CarSolver::GetUnsatisfiableCore(std::vector<int>& out)
+	std::shared_ptr<std::vector<int> > CarSolver::GetUnsatisfiableCore()
 	{
-		std::vector<int> uc;
-		uc.reserve(conflict.size());
+		std::shared_ptr<std::vector<int> > uc(new std::vector<int>());
+		uc->reserve(conflict.size());
 		int val;
 		for (int i = 0; i < conflict.size(); ++i)
 		{
 			val = -GetLiteralId(conflict[i]);
 			if (m_model->IsLatch(val))
 			{
-				uc.emplace_back(val);
+				uc->emplace_back(val);
 			}
 		}
-		std::sort(uc.begin(), uc.end(), cmp);
-		out.swap(uc);
+		std::sort(uc->begin(), uc->end(), cmp);
+		return uc;
 	}
 
-	void CarSolver::AddNewFrame(const std::vector<std::vector<int> >& frame, int frameLevel)
+	void CarSolver::AddNewFrame(const std::vector<std::shared_ptr<std::vector<int> > >& frame, int frameLevel)
 	{
 		for (int i = 0; i < frame.size(); ++i)
 		{
-			AddUnsatisfiableCore(frame[i], frameLevel);
+			AddUnsatisfiableCore(*frame[i], frameLevel);
 		}
 	}
 
@@ -240,30 +240,30 @@ namespace  car
 		}
 	}
 
-	inline void CarSolver::AddConstraintOr(const std::vector<std::vector<int> > frame)
+	inline void CarSolver::AddConstraintOr(const std::vector<std::shared_ptr<std::vector<int> > > frame)
 	{
 		std::vector<int> clause;
 		for (int i = 0; i < frame.size(); ++i)
 		{
 			int flag = GetNewVar();
 			clause.push_back(flag);
-			for (int j = 0; j < frame[i].size(); ++j)
+			for (int j = 0; j < frame[i]->size(); ++j)
 			{
-				AddClause(std::vector<int> {-flag, frame[i][j]});
+				AddClause(std::vector<int> {-flag, (*frame[i])[j]});
 			}
 		}
 		AddClause(clause);
 	}
 
-	inline void CarSolver::AddConstraintAnd(const std::vector<std::vector<int> > frame)
+	inline void CarSolver::AddConstraintAnd(const std::vector<std::shared_ptr<std::vector<int> > > frame)
 	{
 		int flag = GetNewVar();
 		for (int i = 0; i < frame.size(); ++i)
 		{
 			std::vector<int> clause;
-			for (int j = 0; j < frame[i].size(); ++j)
+			for (int j = 0; j < frame[i]->size(); ++j)
 			{
-				clause.push_back(-frame[i][j]);
+				clause.push_back(-(*frame[i])[j]);
 			}
 			clause.push_back(-flag);
 			AddClause(clause);

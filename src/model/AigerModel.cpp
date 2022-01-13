@@ -231,10 +231,6 @@ void AigerModel::CollectNecessaryAndGatesFromConstrain(const aiger* aig, const a
     }
 }
 
-
-
-
-
 void AigerModel::FindAndGates(const aiger_and* aa, const aiger* aig, std::unordered_set<unsigned>& exist_gates, std::vector<unsigned>& gates)
 {
     if (aa == NULL || aa == nullptr)

@@ -2,6 +2,26 @@
 
 namespace car
 {
+	void OverSequence::Insert(std::shared_ptr<std::vector<int> > uc, int index) 
+	{
+		if (index >= m_sequence.size())
+		{
+			m_sequence.push_back(std::vector<std::shared_ptr<std::vector<int> > >());
+		}
+		std::vector<std::shared_ptr<std::vector<int> > > tmp;
+		tmp.reserve(m_sequence[index].size()+1);
+		for (int i = 0; i < m_sequence[index].size(); ++i)
+		{
+			if (!IsImply(*m_sequence[index][i], *uc))
+			{
+				tmp.push_back(m_sequence[index][i]);
+			}
+		}
+		m_sequence[index].swap(tmp);
+		m_sequence[index].push_back(uc);
+	}
+
+	/*
     void OverSequence::Insert(std::vector<int>& uc, int index) 
 	{
 		if (index >= m_sequence.size())
@@ -23,7 +43,9 @@ namespace car
 		m_sequence[index].swap(tmp);
 		//m_sequence[index].push_back(uc);
 	}
-	void OverSequence::GetFrame(int frameLevel, std::vector<std::vector<int> >& out) 
+	*/
+
+	void OverSequence::GetFrame(int frameLevel, std::vector<std::shared_ptr<std::vector<int> > >& out) 
 	{
 		if (frameLevel >= m_sequence.size()) return;
 		out = m_sequence[frameLevel];
@@ -34,10 +56,10 @@ namespace car
 		for (int i = 0; i < m_sequence[frameLevel].size(); ++i)//for each uc
 		{
 			bool isBlockedByUc = true;
-			for (int j = 0; j < m_sequence[frameLevel][i].size(); ++j)//for each literal in uc
+			for (int j = 0; j < m_sequence[frameLevel][i]->size(); ++j)//for each literal in uc
 			{
-				index = abs(m_sequence[frameLevel][i][j]) - m_numInputs - 1;
-				if (state[index] != m_sequence[frameLevel][i][j])
+				index = abs((*m_sequence[frameLevel][i])[j]) - m_numInputs - 1;
+				if (state[index] != (*m_sequence[frameLevel][i])[j])
 				{
 					isBlockedByUc = false;
 					break;
@@ -55,7 +77,7 @@ namespace car
 		return m_sequence.size();
 	}
 
-    bool OverSequence::IsImply ( std::vector<int>& v1,  std::vector<int>& v2) //if v2->v1
+    bool OverSequence::IsImply (std::vector<int>& v1,  std::vector<int>& v2) //if v2->v1
 	{
 
 		if (v1.size () < v2.size ())

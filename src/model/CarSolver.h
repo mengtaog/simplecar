@@ -15,11 +15,11 @@ class CarSolver: public ISolver, public Minisat::Solver
 public:
 	CarSolver();
 	~CarSolver();
-    void GetUnsatisfiableCoreFromBad(std::vector<int>& out, int badId) override;
+    std::shared_ptr<std::vector<int> > GetUnsatisfiableCoreFromBad(int badId) override;
 	void AddClause(const std::vector<int>& clause) override;
 	void AddUnsatisfiableCore(const std::vector<int>& clause, int frameLevel) override;
-	void GetUnsatisfiableCore(std::vector<int>& out) override;
-	void AddNewFrame(const std::vector<std::vector<int> >& frame, int frameLevel) override;
+	std::shared_ptr<std::vector<int> > GetUnsatisfiableCore() override;
+	void AddNewFrame(const std::vector<std::shared_ptr<std::vector<int> > >& frame, int frameLevel) override;
 	bool SolveWithAssumptionAndBad(std::vector<int>& assumption, int badId) override;
 	bool SolveWithAssumption() override;
 	inline void AddAssumption(int id) override {m_assumptions.push(GetLit(id));}
@@ -29,8 +29,8 @@ public:
 #else
 	std::pair<std::shared_ptr<std::vector<int> >, std::shared_ptr<std::vector<int> > > GetAssignment() override;
 #endif
-	inline void AddConstraintOr(const std::vector<std::vector<int> > frame);
-	inline void AddConstraintAnd(const std::vector<std::vector<int> > frame);
+	inline void AddConstraintOr(const std::vector<std::shared_ptr<std::vector<int> > > frame);
+	inline void AddConstraintAnd(const std::vector<std::shared_ptr<std::vector<int> > > frame);
 	inline void FlipLastConstrain();
 protected:
 	static bool cmp(int a, int b)

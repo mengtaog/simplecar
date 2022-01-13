@@ -2,18 +2,18 @@
 
 namespace car
 {
-    void OverSequenceForProp::Insert(std::vector<int>& uc, int index) 
+    void OverSequenceForProp::Insert(std::shared_ptr<std::vector<int> > uc, int index) 
 	{
 		if (index >= m_unprop.size())
 		{
-			m_unprop.emplace_back(std::vector<std::vector<int> >());
-            m_prop.emplace_back(std::vector<std::vector<int> >());
+			m_unprop.emplace_back(std::vector<std::shared_ptr<std::vector<int> > >());
+            m_prop.emplace_back(std::vector<std::shared_ptr<std::vector<int> > >());
 		}
-		std::vector<std::vector<int> > tmp;
+		std::vector<std::shared_ptr<std::vector<int> > > tmp;
 		tmp.reserve(m_unprop[index].size()+1);
 		for (int i = 0; i < m_unprop[index].size(); ++i)
 		{
-			if (!IsImply(m_unprop[index][i], uc))
+			if (!IsImply(*m_unprop[index][i], *uc))
 			{
 				tmp.push_back(m_unprop[index][i]);
 			}
@@ -23,7 +23,7 @@ namespace car
         tmp.clear();
         for (int i = 0; i < m_prop[index].size(); ++i)
 		{
-			if (!IsImply(m_prop[index][i], uc))
+			if (!IsImply(*m_prop[index][i], *uc))
 			{
 				tmp.push_back(m_prop[index][i]);
 			}
@@ -32,10 +32,10 @@ namespace car
 		m_unprop[index].push_back(uc);
 	}
 
-	void OverSequenceForProp::GetFrame(int frameLevel, std::vector<std::vector<int> >& out) 
+	void OverSequenceForProp::GetFrame(int frameLevel, std::vector<std::shared_ptr<std::vector<int> > >& out) 
 	{
 		if (frameLevel >= m_prop.size()) return;
-        std::vector<std::vector<int> > tmp;
+        std::vector<std::shared_ptr<std::vector<int> > > tmp;
         tmp.reserve(m_prop[frameLevel].size() + m_unprop[frameLevel].size());
         tmp.insert(tmp.begin(), m_unprop[frameLevel].begin(), m_unprop[frameLevel].end());
         tmp.insert(tmp.end(), m_prop[frameLevel].begin(), m_prop[frameLevel].end());
@@ -48,10 +48,10 @@ namespace car
 		for (int i = 0; i < m_prop[frameLevel].size(); ++i)//for each uc
 		{
 			bool isBlockedByUc = true;
-			for (int j = 0; j < m_prop[frameLevel][i].size(); ++j)//for each literal in uc
+			for (int j = 0; j < m_prop[frameLevel][i]->size(); ++j)//for each literal in uc
 			{
-				index = abs(m_prop[frameLevel][i][j]) - m_numInputs - 1;
-				if (state[index] != m_prop[frameLevel][i][j])
+				index = abs((*m_prop[frameLevel][i])[j]) - m_numInputs - 1;
+				if (state[index] != (*m_prop[frameLevel][i])[j])
 				{
 					isBlockedByUc = false;
 					break;
@@ -66,10 +66,10 @@ namespace car
         for (int i = 0; i < m_unprop[frameLevel].size(); ++i)//for each uc
 		{
 			bool isBlockedByUc = true;
-			for (int j = 0; j < m_unprop[frameLevel][i].size(); ++j)//for each literal in uc
+			for (int j = 0; j < m_unprop[frameLevel][i]->size(); ++j)//for each literal in uc
 			{
-				index = abs(m_unprop[frameLevel][i][j]) - m_numInputs - 1;
-				if (state[index] != m_unprop[frameLevel][i][j])
+				index = abs((*m_unprop[frameLevel][i])[j]) - m_numInputs - 1;
+				if (state[index] != (*m_unprop[frameLevel][i])[j])
 				{
 					isBlockedByUc = false;
 					break;
@@ -83,6 +83,7 @@ namespace car
 
 		return false;
 	}
+	
 	int OverSequenceForProp::GetLength()
 	{
 		return m_unprop.size();

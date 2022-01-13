@@ -48,3 +48,19 @@ each uc in F[i]
 
 if uc is existed in Fi+1
 for each uc in Fi+1
+
+newCar   car 
+126      125   // 5 6
+139      140   
+
+//1SAT  -> 0.5 newstate(1~2 +O(latches)) GetNewLevel(O(F_[i])*O(uc))
+        -> 0.5 uc insertUC (2~3 O(ucLength) InsertUC O(ucNums*ucLength))
+        begin end
+        -->
+
+7 SAT
+7 SAT
+6 UNSAT
+5
+4
+

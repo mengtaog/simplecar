@@ -3,6 +3,7 @@
 
 #include "IOverSequence.h"
 #include <cmath>
+#include <memory>
 namespace car
 {
 
@@ -16,35 +17,35 @@ public:
 
 	}
 
-	void Insert(std::vector<int>& uc, int index) override;
+	void Insert(std::shared_ptr<std::vector<int> > uc, int index) override;
 	
-	void GetFrame(int frameLevel, std::vector<std::vector<int> >& out) override;
+	void GetFrame(int frameLevel, std::vector<std::shared_ptr<std::vector<int> > >& out) override;
 	
 	bool IsBlockedByFrame(std::vector<int>& state, int frameLevel) override;
 	
 	int GetLength() override;
 
-	std::vector<std::vector<int> >& GetProp(int frameLevel)
+	std::vector<std::shared_ptr<std::vector<int> > >& GetProp(int frameLevel)
 	{
 		return m_prop[frameLevel];
 	}
 
-	std::vector<std::vector<int> >& GetUnProp(int frameLevel)
+	std::vector<std::shared_ptr<std::vector<int> > >& GetUnProp(int frameLevel)
 	{
 		return m_unprop[frameLevel];
 	}
 
-	void InsertIntoProped(std::vector<int>& uc, int index)
+	void InsertIntoProped(std::shared_ptr<std::vector<int> > uc, int index)
 	{
 		if (index >= m_prop.size())
 		{
-			m_unprop.emplace_back(std::vector<std::vector<int> >());
-            m_prop.emplace_back(std::vector<std::vector<int> >());
+			m_unprop.emplace_back(std::vector<std::shared_ptr<std::vector<int> > >());
+            m_prop.emplace_back(std::vector<std::shared_ptr<std::vector<int> > >());
 		}
-		std::vector<std::vector<int> > tmp;
+		std::vector<std::shared_ptr<std::vector<int> > > tmp;
         for (int i = 0; i < m_prop[index].size(); ++i)
 		{
-			if (!IsImply(m_prop[index][i], uc))
+			if (!IsImply(*m_prop[index][i], *uc))
 			{
 				tmp.push_back(m_prop[index][i]);
 			}
@@ -62,8 +63,8 @@ private:
 	}
 	
 	int m_numInputs;
-	std::vector<std::vector<std::vector<int> > > m_unprop;
-	std::vector<std::vector<std::vector<int> > > m_prop;
+	std::vector<std::vector<std::shared_ptr<std::vector<int> > > > m_unprop;
+	std::vector<std::vector<std::shared_ptr<std::vector<int> > > > m_prop;
 	//for()
 };
 

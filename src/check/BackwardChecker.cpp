@@ -70,11 +70,10 @@ namespace car
 			return false;
 		}
 
-		std::vector<int> uc;
 		m_log->Tick();
-		m_mainSolver->GetUnsatisfiableCoreFromBad(uc, badId);
+		auto uc = m_mainSolver->GetUnsatisfiableCoreFromBad(badId);
 		m_log->StatMainSolver();
-		if (uc.empty()) //uc is empty when Bad by itself is unsatisfying
+		if (uc->empty()) //uc is empty when Bad by itself is unsatisfying
 		{
 			//placeholder
 			return true;
@@ -83,7 +82,7 @@ namespace car
 #ifdef __DEBUG__
 		m_log->PrintUcNums(uc, m_overSequence);
 #endif
-		std::vector<std::vector<int> > frame;
+		std::vector<std::shared_ptr<std::vector<int> > > frame;
 		m_overSequence->GetFrame(0, frame);
 		m_mainSolver->AddNewFrame(frame, 0);
 		m_overSequence->effectiveLevel = 0;
@@ -159,9 +158,8 @@ namespace car
 					else
 					{
 						PushToRotation(task.state, task.frameLevel);
-						std::vector<int> uc;
-						m_mainSolver->GetUnsatisfiableCoreFromBad(uc, badId);
-						if (uc.empty())
+						auto uc = m_mainSolver->GetUnsatisfiableCoreFromBad(badId);
+						if (uc->empty())
 						{
 							//placeholder, uc is empty => safe
 						}
@@ -215,9 +213,8 @@ namespace car
 				{
 					//Solver return UNSAT, get uc, then continue
 					PushToRotation(task.state, task.frameLevel);
-					std::vector<int> uc;
-					m_mainSolver->GetUnsatisfiableCore(uc);
-					if (uc.empty())
+					auto uc = m_mainSolver->GetUnsatisfiableCore();
+					if (uc->empty())
 					{
 						//placeholder, uc is empty => safe
 					}
@@ -243,16 +240,17 @@ namespace car
 					continue;
 				}
 			}
-			std::vector<std::vector<int> > lastFrame;
+			if (m_settings.propagation)
+			{
+				Propagation();
+			}
+			std::vector<std::shared_ptr<std::vector<int> > > lastFrame;
 			frameStep++;
 			m_overSequence->GetFrame(frameStep, lastFrame);
 			m_mainSolver->AddNewFrame(lastFrame, frameStep);
 			m_overSequence->effectiveLevel++;
 			
-			if (m_settings.propagation)
-			{
-				Propagation();
-			}
+			
 
 			m_log->Tick();
 			if (isInvExisted())
@@ -283,11 +281,11 @@ namespace car
 		m_log->ResetClock();
 	}
 
-	void BackwardChecker::AddUnsatisfiableCore(std::vector<int>& uc, int frameLevel)
+	void BackwardChecker::AddUnsatisfiableCore(std::shared_ptr<std::vector<int> > uc, int frameLevel)
 	{
 		if (frameLevel <= m_overSequence->effectiveLevel)
 		{
-			m_mainSolver->AddUnsatisfiableCore(uc, frameLevel);
+			m_mainSolver->AddUnsatisfiableCore(*uc, frameLevel);
 		}
 		m_overSequence->Insert(uc, frameLevel);
 		if(frameLevel < m_minUpdateLevel)
@@ -339,7 +337,7 @@ namespace car
 
 	bool BackwardChecker::IsInvariant(int frameLevel)
 	{
-		std::vector<std::vector<int> > frame;
+		std::vector<std::shared_ptr<std::vector<int> > > frame;
 		m_overSequence->GetFrame(frameLevel, frame);
 
 		if (frameLevel < m_minUpdateLevel)

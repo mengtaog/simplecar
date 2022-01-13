@@ -4,6 +4,7 @@
 #include <vector>
 #include <cmath>
 #include "IOverSequence.h"
+#include<memory>
 namespace car
 {
 
@@ -16,9 +17,9 @@ public:
 
 	}
 
-	void Insert(std::vector<int>& uc, int index) override;
+	void Insert(std::shared_ptr<std::vector<int> > uc, int index) override;
 	
-	void GetFrame(int frameLevel, std::vector<std::vector<int> >& out) override;
+	void GetFrame(int frameLevel, std::vector<std::shared_ptr<std::vector<int> > >& out) override;
 	
 	bool IsBlockedByFrame(std::vector<int>& state, int frameLevel) override;
 	
@@ -68,7 +69,7 @@ private:
 		while (left < right)
 		{
 			mid = (left + right)/2;
-			if (comp(m_sequence[frameLevel][mid], uc))
+			if (comp(*m_sequence[frameLevel][mid], uc))
 			{
 				left = mid + 1;
 			}
@@ -77,7 +78,7 @@ private:
 				right = mid - 1;
 			}
 		}
-		if (comp(m_sequence[frameLevel][left], uc))
+		if (comp(*m_sequence[frameLevel][left], uc))
 		{
 			return left+1;
 		}
@@ -88,7 +89,7 @@ private:
 	}
 
 	int m_numInputs;
-	std::vector<std::vector<std::vector<int> > > m_sequence;//frameLevel //uc //literal m_sequence[0][2]
+	std::vector<std::vector<std::shared_ptr<std::vector<int> > > > m_sequence;//frameLevel //uc //literal m_sequence[0][2]
 	//for()
 
 };

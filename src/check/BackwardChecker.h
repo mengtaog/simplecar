@@ -31,7 +31,7 @@ public:
 private:
 	void Init();
 
-	void AddUnsatisfiableCore(std::vector<int>& uc, int frameLevel);
+	void AddUnsatisfiableCore(std::shared_ptr<std::vector<int> > uc, int frameLevel);
 
 	bool ImmediateSatisfiable(int badId);
 
@@ -63,20 +63,20 @@ private:
 		{
 			return;
 		}
-	    std::vector<std::vector<int> > frame;
+	    std::vector<std::shared_ptr<std::vector<int> > > frame;
 		m_overSequence->GetFrame(frameLevel+1, frame);
 	    if (frame.size () == 0)  
 		{
 	    	return;
 		}
 	    	
-	    std::vector<int>& uc = frame[frame.size()-1];
-	    res.reserve (uc.size());
-	    for (int i = 0; i < uc.size() ; ++ i) 
+	    std::shared_ptr<std::vector<int> > uc = frame[frame.size()-1];
+	    res.reserve (uc->size());
+	    for (int i = 0; i < uc->size() ; ++ i) 
 		{
-	    	if ((*latches)[abs(uc[i])-m_model->GetNumInputs()-1] == uc[i]) 
+	    	if ((*latches)[abs((*uc)[i])-m_model->GetNumInputs()-1] == (*uc)[i]) 
 			{
-	    		res.push_back (uc[i]);
+	    		res.push_back ((*uc)[i]);
 	    	}
 	    }
 	}
@@ -135,18 +135,18 @@ private:
 		OverSequenceForProp* sequence = dynamic_cast<OverSequenceForProp*>(m_overSequence.get());
 		for (int frameLevel = 0; frameLevel < sequence->GetLength()-1; ++frameLevel)
 		{
-			std::vector<std::vector<int> >& unpropFrame = sequence->GetUnProp(frameLevel);
-			std::vector<std::vector<int> >& propFrame = sequence->GetProp(frameLevel);
-			std::vector<std::vector<int> > tmp;
+			std::vector<std::shared_ptr<std::vector<int> > > unpropFrame = sequence->GetUnProp(frameLevel);
+			std::vector<std::shared_ptr<std::vector<int> > > propFrame = sequence->GetProp(frameLevel);
+			std::vector<std::shared_ptr<std::vector<int> > > tmp;
 			for (int j = 0; j < unpropFrame.size(); ++j)
 			{	
-				if (sequence->IsBlockedByFrame(unpropFrame[j], frameLevel+1))
+				if (sequence->IsBlockedByFrame(*unpropFrame[j], frameLevel+1))
 				{
 					propFrame.push_back(unpropFrame[j]);
 					continue;
 				}
 
-				bool result = m_mainSolver->SolveWithAssumption(unpropFrame[j], frameLevel);
+				bool result = m_mainSolver->SolveWithAssumption(*unpropFrame[j], frameLevel);
 				if (!result)
 				{
 					AddUnsatisfiableCore(unpropFrame[j], frameLevel+1);

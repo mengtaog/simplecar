@@ -8,7 +8,7 @@ namespace car
         m_log<<"Frame "<<sequence->GetLength()-1<<std::endl;
         for (int i = 0; i < sequence->GetLength(); ++i)
         {
-            std::vector<std::vector<int> > frame;
+            std::vector<std::shared_ptr<std::vector<int> > > frame;
             sequence->GetFrame(i, frame);
             m_log<<frame.size()<<" ";
         }
@@ -68,7 +68,7 @@ namespace car
         m_res<<std::endl<<"Frame:\t";
         for (int i = 0; i < sequence->GetLength(); ++i)
         {
-            std::vector<std::vector<int> > frame;
+            std::vector<std::shared_ptr<std::vector<int> > > frame;
             sequence->GetFrame(i, frame);
             m_res<<frame.size()<<" ";
         }
