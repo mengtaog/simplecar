@@ -13,7 +13,7 @@
 #include "StartSolver.h"
 #include "Task.h"
 #include "Log.h"
-#include <assert.h>
+
 #include <memory>
 
 namespace car
@@ -38,21 +38,7 @@ private:
 
 	int GetNewLevel(std::shared_ptr<State> state, int start = 0);
 
-	string GetFileName(string filePath)
-	{
-		auto startIndex = filePath.find_last_of("/");
-		if (startIndex == string::npos)
-		{
-			startIndex = 0;
-		}
-		else
-		{
-			startIndex++;
-		}
-		auto endIndex = filePath.find_last_of(".");
-		assert (endIndex != string::npos);
-		return filePath.substr(startIndex, endIndex-startIndex);	
-	}
+	
 
 	void GetPriority (std::shared_ptr<std::vector<int> > latches, const int frameLevel, std::vector<int>& res) 
 	{    

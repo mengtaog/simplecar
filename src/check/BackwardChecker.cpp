@@ -9,7 +9,7 @@ namespace car
 		m_model = model;
 		State::numInputs = model->GetNumInputs();
 		State::numLatches = model->GetNumLatches(); 
-		m_log.reset(new Log(settings.outputDir + GetFileName(settings.aigFilePath), settings.timelimit/model->GetNumOutputs(), model));
+		m_log.reset(new Log(settings, model));
 		const std::vector<int>& init = model->GetInitialState();
 		std::shared_ptr<std::vector<int> > inputs(new std::vector<int>(State::numInputs, 0));
 		std::shared_ptr<std::vector<int> > latches(new std::vector<int>());
@@ -60,12 +60,17 @@ namespace car
 
 		if (ImmediateSatisfiable(badId))
 		{
-#ifdef __DEBUG__
-			auto pair = m_mainSolver->GetAssignment(m_log->m_debug);
-#else
-			//auto pair = m_mainSolver->GetAssignment();
-			auto pair = m_mainSolver->GetAssignment(m_log->m_debug);
-#endif
+			std::pair<std::shared_ptr<std::vector<int> >, std::shared_ptr<std::vector<int> > > pair;
+			if (m_settings.debug)
+			{
+				pair = m_mainSolver->GetAssignment(m_log->m_debug);
+			}
+			else
+			{
+				pair = m_mainSolver->GetAssignment();
+			}
+			
+
 			std::shared_ptr<State> newState(new State (m_initialState, pair.first, pair.second, 1));
 			m_log->lastState = newState;
 			return false;
@@ -80,7 +85,11 @@ namespace car
 			return true;
 		}
 		m_overSequence->Insert(uc, 0);
-		m_log->PrintUcNums(*uc, m_overSequence.get()); //debug
+		if (m_settings.debug)
+		{
+			m_log->PrintUcNums(*uc, m_overSequence.get()); //debug
+		}
+		
 		std::vector<std::shared_ptr<std::vector<int> > > frame;
 		m_overSequence->GetFrame(0, frame);
 		m_mainSolver->AddNewFrame(frame, 0);
@@ -134,25 +143,27 @@ namespace car
 
  				if (task.frameLevel == -1)
 				{ 
-					m_log->Tick();
-#ifdef __DEBUG__
-					m_log->PrintSAT(*(task.state->latches), task.frameLevel);
-#endif
-					
+					m_log->Tick();					
 					std::vector<int> assumption;
 					GetAssumption(task.state, task.frameLevel, assumption);
-					m_log->PrintSAT(assumption, task.frameLevel);
+					if (m_settings.debug)
+					{
+						m_log->PrintSAT(assumption, task.frameLevel);
+					}
 					bool result = m_mainSolver->SolveWithAssumptionAndBad(assumption, badId);
 					m_log->StatMainSolver();
 					if (result)
 					{
-						//placeholder, get counterexample
-#ifdef __DEBUG__
-						auto pair = m_mainSolver->GetAssignment(m_log->m_res);
-#else
-						//auto pair = m_mainSolver->GetAssignment();
-						auto pair = m_mainSolver->GetAssignment(m_log->m_debug);
-#endif
+						std::pair<std::shared_ptr<std::vector<int> >, std::shared_ptr<std::vector<int> > > pair;
+						if (m_settings.debug)
+						{
+							pair = m_mainSolver->GetAssignment(m_log->m_debug);
+						}
+						else
+						{
+							pair = m_mainSolver->GetAssignment();
+						}
+
 						std::shared_ptr<State> newState(new State (task.state, pair.first, pair.second, task.state->depth+1));
 						m_log->lastState = newState;
 						return false;
@@ -168,7 +179,10 @@ namespace car
 						m_log->Tick();
 						AddUnsatisfiableCore(uc, task.frameLevel+1);
 						m_log->StatUpdateUc();
-						m_log->PrintUcNums(*uc, m_overSequence.get()); //test
+						if (m_settings.debug)
+						{
+							m_log->PrintUcNums(*uc, m_overSequence.get());
+						}
 
  						task.frameLevel++;
 						 //notes 4
@@ -187,25 +201,28 @@ namespace car
 					}
 				}
 				m_log->Tick();
-#ifdef __DEBUG__
-				m_log->PrintSAT(*(task.state->latches), task.frameLevel);
-#endif
-				
-				//bool result = m_mainSolver->SolveWithAssumption(*(task.state->latches), task.frameLevel);
+
+	
 				std::vector<int> assumption;
 				GetAssumption(task.state, task.frameLevel, assumption);
-				m_log->PrintSAT(assumption, task.frameLevel);
+				if (m_settings.debug)
+				{
+					m_log->PrintSAT(assumption, task.frameLevel);
+				}
 				bool result = m_mainSolver->SolveWithAssumption(assumption, task.frameLevel);
 				m_log->StatMainSolver();
 				if (result)
 				{
 					//Solver return SAT, get a new State, then continue
-#ifdef __DEBUG__
-					auto pair = m_mainSolver->GetAssignment(m_log->m_res);
-#else
-					//auto pair = m_mainSolver->GetAssignment();
-					auto pair = m_mainSolver->GetAssignment(m_log->m_debug);
-#endif
+					std::pair<std::shared_ptr<std::vector<int> >, std::shared_ptr<std::vector<int> > > pair;
+					if (m_settings.debug)
+					{
+						pair = m_mainSolver->GetAssignment(m_log->m_debug);
+					}
+					else
+					{
+						pair = m_mainSolver->GetAssignment();
+					}
 					std::shared_ptr<State> newState(new State (task.state, pair.first, pair.second, task.state->depth+1));
 					m_underSequence.push(newState);                                 
 					int newFrameLevel = GetNewLevel(newState);
@@ -225,7 +242,10 @@ namespace car
 					AddUnsatisfiableCore(uc, task.frameLevel+1);
 					m_log->StatUpdateUc();
 
-					m_log->PrintUcNums(*uc, m_overSequence.get());
+					if (m_settings.debug)
+					{
+						m_log->PrintUcNums(*uc, m_overSequence.get());
+					}
 					task.frameLevel++;
 					//notes 4
 					/*

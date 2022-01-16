@@ -9,7 +9,8 @@ namespace car
 		m_model = model;
 		State::numInputs = model->GetNumInputs();
 		State::numLatches = model->GetNumLatches(); 
-		m_log.reset(new Log(settings.outputDir + GetFileName(settings.aigFilePath), settings.timelimit/model->GetNumOutputs(), model));
+		m_log.reset(new Log(settings, model));
+
 		const std::vector<int>& init = model->GetInitialState();
 		std::shared_ptr<std::vector<int> > inputs(new std::vector<int>(State::numInputs, 0));
 		std::shared_ptr<std::vector<int> > latches(new std::vector<int>());
@@ -129,10 +130,10 @@ namespace car
 						return false;
 					}
 					m_log->Tick();
-	#ifdef __DEBUG__
-					m_log->PrintSAT(*(task.state->latches), task.frameLevel);
-	#endif
-					m_log->PrintSAT(*(task.state->latches), task.frameLevel);
+					if(m_settings.debug)
+					{	
+						m_log->PrintSAT(*(task.state->latches), task.frameLevel);
+					}
 					//bool result = m_mainSolver->SolveWithAssumption(*(task.state->latches), task.frameLevel);
 					std::vector<int> assumption;
 					GetAssumption(task.state, task.frameLevel, assumption);
@@ -141,12 +142,15 @@ namespace car
 					if (result)
 					{
 						//Solver return SAT, get a new State, then continue
-	#ifdef __DEBUG__
-						auto pair = m_mainSolver->GetAssignment(m_log->m_res);
-	#else
-						//auto pair = m_mainSolver->GetAssignment();
-						auto pair = m_mainSolver->GetAssignment(m_log->m_debug);
-	#endif
+						std::pair<std::shared_ptr<std::vector<int> >, std::shared_ptr<std::vector<int> > > pair;
+						if (m_settings.debug)
+						{
+							pair = m_mainSolver->GetAssignment(m_log->m_debug);
+						}
+						else
+						{
+							pair = m_mainSolver->GetAssignment();
+						}
 						std::shared_ptr<State> newState(new State (task.state, pair.first, pair.second, task.state->depth+1));
 						m_underSequence.push(newState);                                 
 						int newFrameLevel = GetNewLevel(newState);
@@ -156,7 +160,10 @@ namespace car
 					else
 					{
 						//Solver return UNSAT, get uc, then continue
-						if (m_settings.rotate) PushToRotation(task.state, task.frameLevel);
+						if (m_settings.rotate) 
+						{
+							PushToRotation(task.state, task.frameLevel);
+						}
 						auto uc = m_mainSolver->GetUnsatisfiableCore();
 						if (uc->empty())
 						{
@@ -164,7 +171,10 @@ namespace car
 						}
 						m_log->Tick();
 						AddUnsatisfiableCore(uc, task.frameLevel+1);
-						m_log->PrintUcNums(*uc, m_overSequence.get());
+						if (m_settings.debug)
+						{
+							m_log->PrintUcNums(*uc, m_overSequence.get());
+						}
 						m_log->StatUpdateUc();
 	#ifdef __DEBUG__
 						m_log->PrintUcNums(uc, m_overSequence);

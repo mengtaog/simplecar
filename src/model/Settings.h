@@ -8,6 +8,7 @@ namespace car
 
 struct Settings
 {
+    bool debug = false;
     bool forward = false;
     bool propagation = false;
     bool minimal_uc = false;

@@ -9,19 +9,25 @@
 #include "OverSequence.h"
 #include "AigerModel.h"
 #include <memory>
+#include "Settings.h"
+#include <assert.h>
 namespace car
 {
 
 class Log
 {
 public:
-    Log(std::string outPath, int inTimelimit, std::shared_ptr<AigerModel> model)
+    Log(Settings settings, std::shared_ptr<AigerModel> model) : m_settings(settings)
     {
+        string outPath = settings.outputDir + GetFileName(settings.aigFilePath);
         m_model = model;
         m_res.open(outPath + ".res");
         m_log.open(outPath + ".log");
-        m_debug.open(outPath + ".debug");
-        m_timelimit = static_cast<double>(inTimelimit);
+        if (settings.debug)
+        {
+            m_debug.open(outPath + ".debug");
+        } 
+        m_timelimit = static_cast<double>(settings.timelimit/model->GetNumOutputs());
         lastState = nullptr;
         m_begin = clock();
     }
@@ -30,8 +36,12 @@ public:
     {
         m_res.close();
         m_log.close();
-        m_debug.close();
+        if (m_settings.debug)
+        {
+            m_debug.close();
+        } 
     }
+    
 
     void PrintFramesInfo(IOverSequence* sequence);
 
@@ -108,6 +118,23 @@ public:
     std::ofstream m_res;
     std::ofstream m_debug;
 private:
+
+    string GetFileName(string filePath)
+	{
+		auto startIndex = filePath.find_last_of("/");
+		if (startIndex == string::npos)
+		{
+			startIndex = 0;
+		}
+		else
+		{
+			startIndex++;
+		}
+		auto endIndex = filePath.find_last_of(".");
+		assert (endIndex != string::npos);
+		return filePath.substr(startIndex, endIndex-startIndex);	
+	}
+
     int m_mainSolverCalls = 0;
     int m_invSolverCalls = 0;
     double m_mainSolverTime = 0;
@@ -120,6 +147,7 @@ private:
     clock_t m_begin;
     
     std::ofstream m_log;
+    Settings m_settings;
     
 };
 

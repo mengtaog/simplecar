@@ -41,7 +41,7 @@ int main(int argc, char** argv)
 
 void PrintUsage()
 {
-    printf ("Usage: simplecar <-f|-b> [-e|-v|-h] <-begin|-end> <-interation|-rotation|-interation -rotation> <aiger file> <output directory>\n");
+    printf ("Usage: simplecar <-f|-b>  <-end> <-interation|-rotation|-interation -rotation> <aiger file> <output directory>\n");
     printf ("       -timeout        set timeout\n");   
     printf ("       -f              forward checking (Default = backward checking)\n");
     printf ("       -b              backward checking \n");
@@ -50,8 +50,8 @@ void PrintUsage()
     printf ("       -prop           active propagation\n");
     printf ("       -end            state numeration from end of the sequence\n");
     printf ("       -h              print help information\n");
+    printf ("       -debug          print debug info\n");
     printf ("NOTE: -f and -b cannot be used together!\n");
-    printf ("NOTE: -begin and -end cannot be used together!\n");
     exit (0);
 }
 
@@ -85,6 +85,10 @@ Settings GetArgv(int argc, char** argv)
         else if (strcmp(argv[i], "-prop") == 0)
         {
             settings.propagation = true;
+        }
+        else if (strcmp(argv[i], "-debug") == 0)
+        {
+            settings.debug = true;
         }
         else if (!hasSetInputDir)
         {
