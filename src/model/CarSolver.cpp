@@ -67,10 +67,21 @@ namespace  car
 		int flag = GetFrameFlag(frameLevel);
 		vec<Lit> literals;
 		literals.push(GetLit(-flag));
-		for (int i = 0; i < clause.size(); ++i)
-        {
-            literals.push(GetLit(-m_model->GetPrime(clause[i])));
-        }
+		if (m_isForward)
+		{
+			for (int i = 0; i < clause.size(); ++i)
+			{
+				literals.push(GetLit(-clause[i]));
+			}
+		}
+		else
+		{
+			for (int i = 0; i < clause.size(); ++i)
+			{
+				literals.push(GetLit(-m_model->GetPrime(clause[i])));
+			}
+		}
+		
         bool result = addClause(literals);
         if (!result)
         {
@@ -78,29 +89,15 @@ namespace  car
         }
 	}
 
-#ifdef __DEBUG__
-    std::pair<std::vector<int>*, std::vector<int>* > CarSolver::GetAssignment(std::ofstream& out)
+
+    std::pair<std::shared_ptr<std::vector<int> >, std::shared_ptr<std::vector<int> > > CarSolver::GetAssignment(std::ofstream& out)
 	{
+		out<<"GetAssignment:"<<std::endl;
 		assert(m_model->GetNumInputs() < nVars());
-		std::vector<int>* inputs = new std::vector<int>();
-		std::vector<int>* latches = new std::vector<int>();
+		std::shared_ptr<std::vector<int> > inputs(new std::vector<int>());
+		std::shared_ptr<std::vector<int> > latches(new std::vector<int>());
 		inputs->reserve(m_model->GetNumInputs());
 		latches->reserve(m_model->GetNumLatches());
-		//
-		out<<"Model: "<<std::endl;
-		for (int i = 0; i < nVars(); ++i)
-		{
-			if (model[i] == l_True)
-			{
-				out<<i+1<<" ";
-			}
-			else if (model[i] == l_False)
-			{
-				out<<-i-1<<" ";
-			}
-		}
-		out<<std::endl<<"After ShrinkModel: "<<std::endl;
-		//
 		for (int i = 0; i <m_model->GetNumInputs(); ++i)
 		{
 			if (model[i] == l_True)
@@ -114,16 +111,31 @@ namespace  car
 		}
 		for (int i = m_model->GetNumInputs(), end = m_model->GetNumInputs() + m_model->GetNumLatches(); i < end; ++i)
 		{
-			int p = m_model->GetPrime(i+1);
-			lbool val = model[abs(p)-1];
-			if ((val == l_True && p > 0) || (val == l_False && p < 0))
+			if (m_isForward)
 			{
-				latches->emplace_back(i+1);
+				if (model[i] == l_True)
+				{
+					latches->emplace_back(i+1);
+				}
+				else if (model[i] == l_False)
+				{
+					latches->emplace_back(-i-1);
+				}
 			}
 			else
 			{
-				latches->emplace_back(-i-1);
+				int p = m_model->GetPrime(i+1);
+				lbool val = model[abs(p)-1];
+				if ((val == l_True && p > 0) || (val == l_False && p < 0))
+				{
+					latches->emplace_back(i+1);
+				}
+				else
+				{
+					latches->emplace_back(-i-1);
+				}
 			}
+			
 		}
 		//
 		for (auto it = inputs->begin(); it != inputs->end(); ++it)
@@ -137,9 +149,8 @@ namespace  car
 		out<<std::endl;
 
 		//
-		return std::pair<std::vector<int>*, std::vector<int>* >(inputs, latches);
+		return std::pair<std::shared_ptr<std::vector<int> >, std::shared_ptr<std::vector<int> > >(inputs, latches);
 	}
-#else
 	std::pair<std::shared_ptr<std::vector<int> >, std::shared_ptr<std::vector<int> > > CarSolver::GetAssignment()
 	{
 		assert(m_model->GetNumInputs() < nVars());
@@ -160,20 +171,35 @@ namespace  car
 		}
 		for (int i = m_model->GetNumInputs(), end = m_model->GetNumInputs() + m_model->GetNumLatches(); i < end; ++i)
 		{
-			int p = m_model->GetPrime(i+1);
-			lbool val = model[abs(p)-1];
-			if ((val == l_True && p > 0) || (val == l_False && p < 0))
+			if (m_isForward)
 			{
-				latches->emplace_back(i+1);
+				if (model[i] == l_True)
+				{
+					latches->emplace_back(i+1);
+				}
+				else if (model[i] == l_False)
+				{
+					latches->emplace_back(-i-1);
+				}
 			}
 			else
 			{
-				latches->emplace_back(-i-1);
+				int p = m_model->GetPrime(i+1);
+				lbool val = model[abs(p)-1];
+				if ((val == l_True && p > 0) || (val == l_False && p < 0))
+				{
+					latches->emplace_back(i+1);
+				}
+				else
+				{
+					latches->emplace_back(-i-1);
+				}
 			}
+			
 		}
 		return std::pair<std::shared_ptr<std::vector<int> >, std::shared_ptr<std::vector<int> > >(inputs, latches);
 	}
-#endif
+
 
     std::shared_ptr<std::vector<int> > CarSolver:: GetUnsatisfiableCoreFromBad(int badId)
 	{
@@ -197,21 +223,48 @@ namespace  car
 		std::shared_ptr<std::vector<int> > uc(new std::vector<int>());
 		uc->reserve(conflict.size());
 		int val;
-		for (int i = 0; i < conflict.size(); ++i)
+		if (m_isForward)
 		{
-			val = -GetLiteralId(conflict[i]);
-			if (m_model->IsLatch(val))
+			for (int i = 0; i < conflict.size(); ++i)
 			{
-				uc->emplace_back(val);
+				val = -GetLiteralId(conflict[i]);
+ 				std::vector<int> ids = m_model->GetPrevious(val);
+				if (val > 0)
+				{
+ 					for(auto x: ids)
+					{
+						uc->push_back(x);
+					}
+				}
+				else
+				{
+					for(auto x:ids)
+					{
+						uc->push_back(-x);
+					}  
+				}
 			}
 		}
+		else
+		{
+			for (int i = 0; i < conflict.size(); ++i)
+			{
+				val = -GetLiteralId(conflict[i]);
+				if (m_model->IsLatch(val))
+				{
+					uc->emplace_back(val);
+				}
+			}
+		}
+		
 		std::sort(uc->begin(), uc->end(), cmp);
 		return uc;
 	}
 
+
 	void CarSolver::AddNewFrame(const std::vector<std::shared_ptr<std::vector<int> > >& frame, int frameLevel)
 	{
-		for (int i = 0; i < frame.size(); ++i)
+ 		for (int i = 0; i < frame.size(); ++i)
 		{
 			AddUnsatisfiableCore(*frame[i], frameLevel);
 		}

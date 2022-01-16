@@ -1,5 +1,6 @@
 #include <cstdio>
 #include "BackwardChecker.h"
+#include "ForwardChecker.h"
 #include "AigerModel.h"
 #include "Settings.h"
 #include <string.h>
@@ -24,7 +25,15 @@ int main(int argc, char** argv)
 {
     Settings settings = GetArgv(argc, argv);
     shared_ptr<AigerModel> aigerModel(new AigerModel(settings.aigFilePath));
-    BaseChecker* checker = new BackwardChecker(settings, aigerModel);
+    BaseChecker* checker;
+    if (settings.forward)
+    {
+        checker = new ForwardChecker(settings, aigerModel);
+    }
+    else
+    {
+        checker = new BackwardChecker(settings, aigerModel);
+    }
     checker->Run();
     delete checker;
     return 0;

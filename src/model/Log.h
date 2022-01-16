@@ -20,6 +20,7 @@ public:
         m_model = model;
         m_res.open(outPath + ".res");
         m_log.open(outPath + ".log");
+        m_debug.open(outPath + ".debug");
         m_timelimit = static_cast<double>(inTimelimit);
         lastState = nullptr;
         m_begin = clock();
@@ -29,11 +30,12 @@ public:
     {
         m_res.close();
         m_log.close();
+        m_debug.close();
     }
 
     void PrintFramesInfo(IOverSequence* sequence);
 
-    void PrintCounterExample(int badNo);
+    void PrintCounterExample(int badNo, bool isForward = false);
 
     void PrintSafe(int badNo);
 
@@ -104,6 +106,7 @@ public:
 
     std::shared_ptr<State> lastState;
     std::ofstream m_res;
+    std::ofstream m_debug;
 private:
     int m_mainSolverCalls = 0;
     int m_invSolverCalls = 0;

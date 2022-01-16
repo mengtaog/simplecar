@@ -6,7 +6,7 @@
 namespace car
 {
 
-class Task
+struct Task
 {
 public:
     Task(std::shared_ptr<State> inState, int inFrameLevel, bool inIsLocated) : state(inState), frameLevel(inFrameLevel), isLocated(inIsLocated){};

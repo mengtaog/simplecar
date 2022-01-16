@@ -15,39 +15,53 @@ namespace car
         m_log<<std::endl;
     }
 
-    void Log::PrintCounterExample(int badNo)
+    void Log::PrintCounterExample(int badNo, bool isForward = false)
     {
         
         m_res <<"1"<<std::endl<<"b"<<badNo<<std::endl;
-        if (lastState == nullptr)
+        if (isForward)
         {
-            for (int i = 0; i < m_model->GetNumLatches(); ++i)
+            std::shared_ptr<State> state = lastState;
+            m_res<<state->GetValueOfLatches()<<std::endl;
+            m_res<<state->GetValueOfInputs()<<std::endl;
+            while(state->preState != nullptr)
             {
-                m_res<<"0";
+                state = state->preState;
+                m_res<<state->GetValueOfInputs()<<std::endl;
             }
-            m_res<<std::endl;
-            for (int i = 0; i < m_model->GetNumInputs(); ++i)
-            {
-                m_res<<"0";
-            }
-            m_res<<std::endl;
         }
         else
         {
-            std::stack<std::shared_ptr<State> > trace;
-            std::shared_ptr<State> state = lastState;
-            while (state != nullptr)
+            if (lastState == nullptr)
             {
-                trace.push(state);
-                state = state->preState;
+                for (int i = 0; i < m_model->GetNumLatches(); ++i)
+                {
+                    m_res<<"0";
+                }
+                m_res<<std::endl;
+                for (int i = 0; i < m_model->GetNumInputs(); ++i)
+                {
+                    m_res<<"0";
+                }
+                m_res<<std::endl;
             }
-            m_res << trace.top()->GetValueOfLatches()<<std::endl;
-            //m_res << trace.top()->GetValueOfInputs()<<std::endl;
-            trace.pop();
-            while(!trace.empty())
+            else
             {
-                m_res<<trace.top()->GetValueOfInputs()<<std::endl;
+                std::stack<std::shared_ptr<State> > trace;
+                std::shared_ptr<State> state = lastState;
+                while (state != nullptr)
+                {
+                    trace.push(state);
+                    state = state->preState;
+                }
+                m_res << trace.top()->GetValueOfLatches()<<std::endl;
+                //m_res << trace.top()->GetValueOfInputs()<<std::endl;
                 trace.pop();
+                while(!trace.empty())
+                {
+                    m_res<<trace.top()->GetValueOfInputs()<<std::endl;
+                    trace.pop();
+                }
             }
         }
         m_res<<"."<<std::endl;
@@ -60,30 +74,30 @@ namespace car
 
     void Log::PrintUcNums(std::vector<int> &uc, IOverSequence* sequence)
     {
-        m_res<<"UNSAT"<<std::endl;
+        m_debug<<"SAT调用结果，UNSAT"<<std::endl<<"新uc=";
         for (int i = 0; i < uc.size(); ++i)
         {
-            m_res<<uc[i]<<" ";
+            m_debug<<uc[i]<<" ";
         }
-        m_res<<std::endl<<"Frame:\t";
+        m_debug<<std::endl<<"Frame:\t";
         for (int i = 0; i < sequence->GetLength(); ++i)
         {
             std::vector<std::shared_ptr<std::vector<int> > > frame;
             sequence->GetFrame(i, frame);
-            m_res<<frame.size()<<" ";
+            m_debug<<frame.size()<<" ";
         }
-        m_res<<std::endl;
+        m_debug<<std::endl;
     }
 
     void Log::PrintSAT(std::vector<int>& vec, int frameLevel)
     {
-        m_res<<"----------------------"<<std::endl;
-        m_res<<"SAT, frameLevel: "<<frameLevel<<std::endl;
+        m_debug<<"----------------------"<<std::endl;
+        m_debug<<"执行SAT, frameLevel= "<<frameLevel<<std::endl<<"assumption = ";
         for (int i = 0; i < vec.size(); ++i)
         {
-            m_res<<vec[i]<<" ";
+            m_debug<<vec[i]<<" ";
         }
-        m_res<<std::endl;
+        m_debug<<std::endl;
     }
 
 

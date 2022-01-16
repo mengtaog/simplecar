@@ -59,10 +59,22 @@ public:
     int GetNumOutputs() {return m_numOutputs;}
     int GetMaxId() {return m_maxId;}
     int GetOutputsStart() {return m_outputsStart; }
+    int GetLatchesStart() {return m_latchesStart; }
     int GetTrueId() {return m_trueId;}
     int GetFalseId() {return m_falseId;}
     std::vector<int>& GetInitialState() { return m_initialState; }
     std::vector<int>& GetOutputs() { return m_outputs;} 
+    std::vector<int> GetPrevious(int id)
+    {
+        if (m_preValueOfLatch.count(abs(id)) > 0)
+        {
+            return m_preValueOfLatch[abs(id)];
+        }
+        else
+        {
+            return std::vector<int>();
+        }
+    }
     int GetPrime(const int id) 
     {
         std::unordered_map<int,int>::iterator it = m_nextValueOfLatch.find(abs(id));
@@ -70,8 +82,10 @@ public:
         {
             return 0;
         }
-        return id > 0 ? it->second : -it->second;
+        return id > 0 ? it->second : -(it->second);
     }
+
+
     std::vector<std::vector<int> >& GetClause() {return m_clauses;}
 #pragma endregion
 

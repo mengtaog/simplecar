@@ -4,7 +4,7 @@
 #include "ISolver.h"
 #include "Solver.h"
 #include "AigerModel.h"
-
+#include<memory>
 using namespace Minisat;
 
 namespace car
@@ -24,14 +24,31 @@ public:
 	bool SolveWithAssumption() override;
 	inline void AddAssumption(int id) override {m_assumptions.push(GetLit(id));}
 	bool SolveWithAssumption(std::vector<int>& assumption, int frameLevel) override;
-#ifdef __DEBUG__
-	std::pair<std::vector<int>*, std::vector<int>* > GetAssignment(std::ofstream& out) override;
-#else
+
+	std::pair<std::shared_ptr<std::vector<int> >, std::shared_ptr<std::vector<int> > > GetAssignment(std::ofstream& out) override;
+
 	std::pair<std::shared_ptr<std::vector<int> >, std::shared_ptr<std::vector<int> > > GetAssignment() override;
-#endif
+
 	inline void AddConstraintOr(const std::vector<std::shared_ptr<std::vector<int> > > frame);
 	inline void AddConstraintAnd(const std::vector<std::shared_ptr<std::vector<int> > > frame);
 	inline void FlipLastConstrain();
+
+	std::shared_ptr<std::vector<int> > GetModel()
+	{
+		std::shared_ptr<std::vector<int> > res(new std::vector<int>());
+		res->resize(nVars (), 0);
+   		for (int i = 0; i < nVars (); i ++)
+   		{
+     		if (model[i] == l_True)
+			 {
+       			res->at(i) = i+1;
+			 }
+     		else if (model[i] == l_False)
+       			res->at(i) = -(i+1);
+   		}
+   		return res;
+	}
+	
 protected:
 	static bool cmp(int a, int b)
 	{
@@ -42,11 +59,12 @@ protected:
 	inline Lit GetLit(int id);
 	inline int GetNewVar() {return m_maxFlag++;}
 
-    
+    bool m_isForward = false;
     int m_maxFlag;
 	std::shared_ptr<AigerModel> m_model;
 	std::vector<int> m_frameFlags;
 	vec<Lit> m_assumptions;
+	
 };
 
 }//namespace car
