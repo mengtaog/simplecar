@@ -6,6 +6,19 @@
 namespace car
 {
 
+
+enum RestartCondition
+{
+    UcNums = 0,
+    Depth
+};
+
+enum RestartBehaviour
+{
+    BackToInit = 0,
+    BackToHalf
+};
+
 struct Settings
 {
     bool debug = false;
@@ -17,10 +30,18 @@ struct Settings
     bool inter = false;
     bool rotate = false;
     bool inputS = false;
-    int timelimit = 0;  
+    bool luby = false;
+    float growthRate = 1.5;
+    int threshold = 64;
+    int timelimit = 0;
+    RestartCondition condition = RestartCondition::UcNums;
+    RestartBehaviour behaviour = RestartBehaviour::BackToInit; 
     std::string aigFilePath;
     std::string outputDir;
 };
+
+
+
 
 
 }

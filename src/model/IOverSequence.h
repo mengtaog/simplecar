@@ -18,6 +18,7 @@ public:
 	virtual int GetLength() = 0;
 
 	int effectiveLevel;
+	bool isForward = false;
 };
 
 }//namespace car

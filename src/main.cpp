@@ -4,6 +4,7 @@
 #include "AigerModel.h"
 #include "Settings.h"
 #include <string.h>
+#include "restart.h"
 #include <memory>
 
 
@@ -51,6 +52,8 @@ void PrintUsage()
     printf ("       -end            state numeration from end of the sequence\n");
     printf ("       -h              print help information\n");
     printf ("       -debug          print debug info\n");
+    printf ("       -depth          restart-depth mode\n");
+    printf ("       -restart        active restart policy\n");
     printf ("NOTE: -f and -b cannot be used together!\n");
     exit (0);
 }
@@ -89,6 +92,18 @@ Settings GetArgv(int argc, char** argv)
         else if (strcmp(argv[i], "-debug") == 0)
         {
             settings.debug = true;
+        }
+        else if (strcmp(argv[i], "-restart") == 0)
+        {
+            settings.restart = true;
+        }
+        else if (strcmp(argv[i], "-luby") == 0)
+        {
+            settings.luby = true;
+        }
+        else if (strcmp(argv[i], "-depth") == 0)
+        {
+            settings.condition = RestartCondition::Depth;
         }
         else if (!hasSetInputDir)
         {

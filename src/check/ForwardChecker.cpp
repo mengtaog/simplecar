@@ -81,6 +81,7 @@ namespace car
 		m_log->PrintUcNums(uc, m_overSequence);
 #endif
 
+
 		std::vector<std::shared_ptr<std::vector<int> > > frame;
 		m_overSequence->GetFrame(0, frame);
 		m_mainSolver->AddNewFrame(frame, 0);
@@ -222,6 +223,7 @@ namespace car
 		{
 			m_overSequence.reset(new OverSequence(m_model->GetNumInputs()));
 		}
+		m_overSequence->isForward = true;
 		m_underSequence = UnderSequence();
 		m_underSequence.push(m_initialState);
 		m_mainSolver.reset(new MainSolver(m_model, true));

@@ -30,6 +30,7 @@ public:
         m_timelimit = static_cast<double>(settings.timelimit/model->GetNumOutputs());
         lastState = nullptr;
         m_begin = clock();
+        m_restartTimes = 0;
     }
 
     ~Log()
@@ -60,6 +61,7 @@ public:
         m_log<<"InvSolver takes:\t"<<m_invSolverTime<<" seconds"<<std::endl;
         m_log<<"GetNewLevel Procedure takes:\t"<<m_getNewLevelTime<<" seconds"<<std::endl;
         m_log<<"Update uc takes:\t"<<m_updateUcTime<<" seconds"<<std::endl;
+        m_log<<"Restart Times:\t"<<m_restartTimes<<std::endl;
         m_log<<"Total Time:\t"<<static_cast<double>(clock()-m_begin)/CLOCKS_PER_SEC<<" seconds"<<std::endl;
     }
 
@@ -114,6 +116,8 @@ public:
         m_updateUcTime += static_cast<double>(clock() - m_tick)/CLOCKS_PER_SEC;
     }
 
+    void CountRestartTimes() {m_restartTimes++;}
+
     std::shared_ptr<State> lastState;
     std::ofstream m_res;
     std::ofstream m_debug;
@@ -137,6 +141,7 @@ private:
 
     int m_mainSolverCalls = 0;
     int m_invSolverCalls = 0;
+    int m_restartTimes = 0;
     double m_mainSolverTime = 0;
     double m_invSolverTime = 0;
     double m_getNewLevelTime = 0;

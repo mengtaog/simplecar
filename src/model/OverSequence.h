@@ -33,7 +33,7 @@ private:
 		return abs (i) < abs(j);
 	}
 
-	bool comp(std::vector<int>& a, std::vector<int>& b)
+	bool comp (std::vector<int>& a, std::vector<int>& b)
 	{
 		if (a.size() < b.size())
 		{

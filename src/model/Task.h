@@ -5,7 +5,9 @@
 #include<memory>
 namespace car
 {
-
+///
+//state SAT(state, T * Over_{frameLevel})
+///
 struct Task
 {
 public:

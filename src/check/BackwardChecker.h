@@ -14,7 +14,7 @@
 #include "Log.h"
 #include <assert.h>
 #include <memory>
-
+#include "restart.h"
 
 
 namespace car
@@ -173,6 +173,7 @@ private:
 	std::shared_ptr<ISolver> m_mainSolver;
 	std::shared_ptr<ISolver> m_invSolver;
 	std::vector<std::shared_ptr<std::vector<int> > > m_rotation;
+	std::shared_ptr<Restart> m_restart;
 };
 
 }//namespace car

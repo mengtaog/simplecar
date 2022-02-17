@@ -94,7 +94,6 @@ namespace car
 		m_overSequence->GetFrame(0, frame);
 		m_mainSolver->AddNewFrame(frame, 0);
 		m_overSequence->effectiveLevel = 0;
-		
 # pragma endregion 
 
 		//main stage
@@ -125,8 +124,15 @@ namespace car
 				{
 					m_log->Timeout();
 				}
+				
 
 				Task& task = workingStack.top();
+				if (m_settings.restart && m_restart->RestartCheck(task.state.get()))
+				{
+					m_restart->DoRestart(workingStack);
+					m_log->CountRestartTimes();
+					continue;
+				}
 				
 				if (!task.isLocated)
 				{
@@ -183,7 +189,7 @@ namespace car
 						{
 							m_log->PrintUcNums(*uc, m_overSequence.get());
 						}
-
+						m_restart->UcCountsPlus1();
  						task.frameLevel++;
 						 //notes 4
 						 /*
@@ -241,7 +247,7 @@ namespace car
 					m_log->Tick();
 					AddUnsatisfiableCore(uc, task.frameLevel+1);
 					m_log->StatUpdateUc();
-
+					m_restart->UcCountsPlus1();
 					if (m_settings.debug)
 					{
 						m_log->PrintUcNums(*uc, m_overSequence.get());
@@ -271,7 +277,7 @@ namespace car
 			m_overSequence->GetFrame(frameStep, lastFrame);
 			m_mainSolver->AddNewFrame(lastFrame, frameStep);
 			m_overSequence->effectiveLevel++;
-			
+			m_restart->ResetUcCounts();
 			
 
 			m_log->Tick();
@@ -301,6 +307,7 @@ namespace car
 		m_mainSolver.reset(new MainSolver(m_model, false));
 		m_invSolver.reset(new InvSolver(m_model));
 		m_log->ResetClock();
+		m_restart.reset(new Restart(m_settings));
 	}
 
 	void BackwardChecker::AddUnsatisfiableCore(std::shared_ptr<std::vector<int> > uc, int frameLevel)

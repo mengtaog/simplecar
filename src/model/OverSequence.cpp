@@ -4,9 +4,16 @@ namespace car
 {
 	void OverSequence::Insert(std::shared_ptr<std::vector<int> > uc, int index) 
 	{
+		
+
 		if (index >= m_sequence.size())
 		{
 			m_sequence.push_back(std::vector<std::shared_ptr<std::vector<int> > >());
+		}
+		if (isForward && index == 0)
+		{
+			m_sequence[0].push_back(uc);
+			return;
 		}
 		std::vector<std::shared_ptr<std::vector<int> > > tmp;
 		tmp.reserve(m_sequence[index].size()+1);
